@@ -17,6 +17,7 @@ create_sampleInfo_table<- function(si_long, ... ){
   colnames(sample_data)<- vars
   sample_data<- data.frame(sample_data)
   sample_data$MetagenNumber<- samples
+
   return(sample_data)
 }
 
@@ -27,6 +28,7 @@ fetch_sampleInfo<-
     sample_info<- create_sampleInfo_table(si_long=si)
     cms<- as_tibble(tbl(con,"cmsdata"))
     sampleInfo <- merge(sample_info,cms,"MetagenNumber")
+    class(sampleInfo)<- "sampledata"
     return(sampleInfo)
   }
 
@@ -37,7 +39,9 @@ sampleInfo<- create_sampleInfo_table(si)
 
 
 
-create_asv_table<- function(asv_long, ... ){
+create_asv_table<- function(con=NULL ){
+
+  asv_long<- as_tibble(tbl(con))
 
   asvs<- unique(asv_long$SV)
   samples<- unique(asv_long$MetagenNumber)
@@ -53,6 +57,12 @@ create_asv_table<- function(asv_long, ... ){
 
   rownames(asv_table)<- samples
   colnames(asv_table)<- asvs
-
+  class(asv_table)<- "abundance"
   return(asv_table)
 }
+
+
+
+fetch_taxonomy<- function
+
+class(taxonomy)<- "taxonomy"
