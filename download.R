@@ -21,28 +21,46 @@ create_sampleInfo_table<- function(si_long, ... ){
   return(sample_data)
 }
 
+#
 
 fetch_sampleInfo<-
-  function(...){
+  function(flist=NULL, ...){
+    if(is.null(con)){
+      stop("You need to specify a database connection")
+    }
+
     si<- as_tibble(tbl(con,"labdata"))
     sample_info<- create_sampleInfo_table(si_long=si)
     cms<- as_tibble(tbl(con,"cmsdata"))
     sampleInfo <- merge(sample_info,cms,"MetagenNumber")
-    class(sampleInfo)<- "sampledata"
+
+    if(!is.null(flist)){
+      sampleInfo<- subset(sampleInfo,flist)
+    }
+
+    class(sampleInfo)<- c(class(sampleInfo), "sampledata")
+
     return(sampleInfo)
+
   }
 
 
-si<- as_tibble(tbl(con,"labdata"))
-
-sampleInfo<- create_sampleInfo_table(si)
 
 
+create_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
-create_asv_table<- function(con=NULL ){
+  if(is.null(con)){
+    stop("You need to specify a database connection")
+  }
+  # fetch data
+  asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
 
-  asv_long<- as_tibble(tbl(con))
+  if(!is.null(whichSamples)){
+    asv_long<- asv_long %>%
+      filter(!!asv_long$MetagenNumber %in% whichSamples )
+  }
 
+  # Construct table
   asvs<- unique(asv_long$SV)
   samples<- unique(asv_long$MetagenNumber)
   rows<- length(samples)
@@ -57,12 +75,44 @@ create_asv_table<- function(con=NULL ){
 
   rownames(asv_table)<- samples
   colnames(asv_table)<- asvs
+
+  # Set class (or not)
+  if(phylo==FALSE){
   class(asv_table)<- "abundance"
+  }
+
   return(asv_table)
+
 }
 
 
 
-fetch_taxonomy<- function
+fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phylo=FALSE){
 
-class(taxonomy)<- "taxonomy"
+  if(is.null(con)){
+    stop("You need to specify a database connection")
+  }
+
+  tax<- dplyr::as_tibble(dplyr::tbl(con,"eukaryota_tax"))
+
+  if(!is.null(whichTaxa)){
+    tax<- tax %>%
+      filter(!!tax$SV %in% whichSamples )
+  }
+
+
+  if(phylo==FALSE){
+
+    class(tax)<- c( "taxonomy",class(tax))
+
+  }else{
+    SV<- tax$SV
+    tax<- tax[,-1]
+    tax<- as.matrix(tax)
+    rownames(tax)<- SV
+  }
+   return(tax)
+
+}
+
+
