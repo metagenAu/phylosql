@@ -1,4 +1,16 @@
 
+#' A phylosql Function
+#'
+#'
+#' @param si_long data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
 create_sampleInfo_table<- function(si_long, ... ){
 
   vars<- unique(si_long$variable)
@@ -21,10 +33,21 @@ create_sampleInfo_table<- function(si_long, ... ){
   return(sample_data)
 }
 
-#
+#' A phylosql Function
+#'
+#'
+#' @param si_long data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
 
 fetch_sampleInfo<-
-  function(flist=NULL, ...){
+  function(flist=NULL, con=NULL){
     if(is.null(con)){
       stop("You need to specify a database connection")
     }
@@ -45,9 +68,20 @@ fetch_sampleInfo<-
   }
 
 
+#' A phylosql Function
+#'
+#'
+#' @param si_long data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
 
 
-create_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
+fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
   if(is.null(con)){
     stop("You need to specify a database connection")
@@ -85,6 +119,17 @@ create_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichS
 
 }
 
+#' A phylosql Function
+#'
+#'
+#' @param si_long data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
 
 
 fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phylo=FALSE){
