@@ -3,8 +3,6 @@
 #'
 #'
 #' @param si_long data to upload
-#' @param database database to send data
-#' @param con connection
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
@@ -36,15 +34,13 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' A phylosql Function
 #'
 #'
-#' @param si_long data to upload
-#' @param database database to send data
+#' @param flist
 #' @param con connection
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
 #' @export
 #'
-
 
 fetch_sampleInfo<-
   function(flist=NULL, con=NULL){
@@ -71,15 +67,15 @@ fetch_sampleInfo<-
 #' A phylosql Function
 #'
 #'
-#' @param si_long data to upload
+#' @param phylo logical
 #' @param database database to send data
 #' @param con connection
+#' @param whichSamples select specific samples to access
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
 #' @export
 #'
-
 
 fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
@@ -121,10 +117,10 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
 
 #' A phylosql Function
 #'
-#'
-#' @param si_long data to upload
+#' @param phylo logical. Whether to format data for phyloseq or sparseHDD.
 #' @param database database to send data
 #' @param con connection
+#' @param whichTaxa select specific taxa
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
