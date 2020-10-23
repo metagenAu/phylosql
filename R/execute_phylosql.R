@@ -6,7 +6,6 @@ library(dplyr)
 con <- dbConnect(RMariaDB::MariaDB(), user='mtgn_one', password="SQLmtgn_pword1", dbname='mtgn',
                  host='localhost')
 
-library(phylosql)
 
 cms<- read.csv("C:/Users/Chris/Documents/cms.csv",stringsAsFactors = FALSE)
 ms<- read_masterSheet()
