@@ -50,7 +50,7 @@ fetch_sampleInfo<-
 
     si<- as_tibble(tbl(con,"labdata"))
     sample_info<- create_sampleInfo_table(si_long=si)
-    cms<- as_tibble(tbl(con,"cmsdata"))
+    cms<- data.frame(tbl(con,"cmsdata"))
     sampleInfo <- merge(sample_info,cms,"MetagenNumber")
 
     if(!is.null(flist)){
@@ -58,7 +58,7 @@ fetch_sampleInfo<-
     }
 
     class(sampleInfo)<- c(class(sampleInfo), "sampledata")
-
+    rownames(sampleInfo)<- sampleInfo$MetagenNumber
     return(sampleInfo)
 
   }
