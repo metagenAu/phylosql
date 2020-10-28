@@ -134,7 +134,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
     stop("You need to specify a database connection")
   }
 
-  tax<- dplyr::as_tibble(dplyr::tbl(con,"eukaryota_tax"))
+  tax<- dplyr::as_tibble(dplyr::tbl(con,database))
 
   if(!is.null(whichTaxa)){
     tax<- tax %>%
