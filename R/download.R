@@ -109,7 +109,7 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
 
   # Set class (or not)
   if(phylo==FALSE){
-  asv_table<-  as(sv18s,"dgCMatrix")
+  asv_table<-  as(asv_table,"dgCMatrix")
   attr(asv_table, "type")<- "abundance"
   }
 
