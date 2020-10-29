@@ -74,6 +74,7 @@ fetch_sampleInfo<-
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
+#' @import Matrix
 #' @export
 #'
 
@@ -108,7 +109,8 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
 
   # Set class (or not)
   if(phylo==FALSE){
-  class(asv_table)<- "abundance"
+  asv_table<-  as(sv18s,"dgCMatrix")
+  attr(asv_table, "type")<- "abundance"
   }
 
   return(asv_table)
@@ -144,7 +146,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
 
   if(phylo==FALSE){
 
-    class(tax)<- c( "taxonomy",class(tax))
+    attr(tax,"type")<- c( "taxonomy")
 
   }else{
     SV<- tax$SV
