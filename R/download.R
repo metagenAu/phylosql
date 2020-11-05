@@ -42,7 +42,7 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' @export
 #'
 
-fetch_sampleInfo<-
+  fetch_sampleInfo<-
   function(flist=NULL, con=NULL){
     if(is.null(con)){
       stop("You need to specify a database connection")
@@ -53,6 +53,13 @@ fetch_sampleInfo<-
     cms<- data.frame(tbl(con,"cmsdata"))
     sampleInfo <- merge(sample_info,cms,"MetagenNumber")
 
+    missed<- which(!cms$MetagenNumber %in% sampleInfo$MetagenNumber)
+    cols<- match(colnames(cms), colnames(sampleInfo))
+
+    nsamps<- nrow(sampleInfo)
+
+    sampleInfo[(nsamps+1):(nsamps+length(missed)),cols] <- cms[missed, ]
+
     if(!is.null(flist)){
       sampleInfo<- subset(sampleInfo,flist)
     }
@@ -62,7 +69,6 @@ fetch_sampleInfo<-
     return(sampleInfo)
 
   }
-
 
 #' A phylosql Function
 #'
