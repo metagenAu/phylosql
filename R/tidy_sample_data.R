@@ -44,7 +44,7 @@ read_masterSheet<-
 ms_as_cmsData<- function(data){
 
   data$SurveyID<- NA
-  cms_cols<-  c( "MetagenNumber","PropertyName", "SurveyId",
+  cms_cols<-  c( "MetagenNumber","PropertyName", "SurveyID",
                  "BlockName", "CropName", "SurveyDate",
                  "Location", "AgronomistName")
   data_sql<- data[ , cms_cols]
