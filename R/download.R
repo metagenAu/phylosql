@@ -146,7 +146,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
 
   if(!is.null(whichTaxa)){
     tax<- tax %>%
-      filter(!!tax$SV %in% whichSamples )
+      filter(!!tax$SV %in% whichTaxa )
   }
 
 
