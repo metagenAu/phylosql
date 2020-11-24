@@ -123,5 +123,37 @@ as_labData<- function(labdata){
 
 
 
+#' A phylosql Function
+#'
+#' formats cms data to long for upload. Strict mode.
+#' @param data data to format
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import tidyr
+#' @export
+#'
 
 
+cms_as_longCms<- function(data){
+  data_long <- tidyr::gather(data,Factor, Level, PropertyName:AgronomistName, factor_key=TRUE)
+  return(data_long)
+}
+
+#' A phylosql Function
+#'
+#' formats misc data to cms data
+#' @param data data to format
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import tidyr
+#' @export
+#'
+
+misc_as_longCms<- function(data){
+  stopifnot(colnames(data)[1]=="metagenNumber")
+  cols<- colnames(data)
+  data_long <- gather(cmsdata,Factor, Level, cols[2]:cols[length(cols)], factor_key=TRUE)
+  return(data_long)
+}

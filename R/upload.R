@@ -135,3 +135,39 @@ upload_cms_data<-
     RMariaDB::dbAppendTable(con, database,value= data[upload,] )
     message("Complete.")
   }
+
+
+#' A phylosql Function
+#'
+#' function to upload cms data to mysql database
+#' @param data data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
+upload_cms_data_Long<-
+  function(data,database="cmsdatalong",con=NULL){
+
+    if(is.null(con)){
+      stop("You need to specify a database connection")
+    }
+    if(ncol(data)!=3){
+      stop("This data is not the correct format")
+    }
+
+    si<- dplyr::as_tibble(
+      dplyr::tbl(con,database))
+
+    existingID<- paste0(si$MetagenNumber)
+    newID<- paste0(data$MetagenNumber)
+
+    upload<- which(!newID %in% existingID)
+    stopifnot(length(upload)>0)
+    message(paste0("Uploading ",length(upload)," samples."))
+    RMariaDB::dbAppendTable(con, database,value= data[upload,] )
+    message("Complete.")
+  }
