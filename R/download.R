@@ -43,14 +43,25 @@ create_sampleInfo_table<- function(si_long, ... ){
 #'
 
   fetch_sampleInfo<-
-  function(flist=NULL, con=NULL){
+  function(flist=NULL, con=NULL,cms_format="long"){
     if(is.null(con)){
       stop("You need to specify a database connection")
     }
 
     si<- as_tibble(tbl(con,"labdata"))
     sample_info<- create_sampleInfo_table(si_long=si)
-    cms<- data.frame(tbl(con,"cmsdata"))
+
+    if(cms_format=="long"){
+
+      cmslong<- as_tibble(tbl(con,"cmsdatalong"))
+      cms<- create_cms_table(cms_long=cmslong)
+
+    }else{
+
+      cms<- data.frame(tbl(con,"cmsdata"))
+
+    }
+
     sampleInfo <- merge(sample_info,cms,"MetagenNumber")
 
     missed<- which(!cms$MetagenNumber %in% sampleInfo$MetagenNumber)
@@ -165,3 +176,35 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
 }
 
 
+#' A phylosql Function
+#'
+#'
+#' @param cms_long data to upload
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
+create_cms_table<- function(cms_long, ...){
+
+  vars<- unique(cms_long$Factor)
+  samples<- unique(cms_long$MetagenNumber)
+  rows<- length(samples)
+  cols<- length(vars)
+  sample_data<- matrix(NA,ncol=cols, nrow=rows)
+
+  sampleList<- split(cms_long,cms_long$MetagenNumber)
+
+  for(i in seq_along(sampleList)){
+    sample_data[i,match(sampleList[[i]]$Factor, vars)  ]<- sampleList[[i]]$Level
+  }
+
+  rownames(sample_data)<- samples
+  colnames(sample_data)<- vars
+  sample_data<- data.frame(sample_data)
+  sample_data$MetagenNumber<- samples
+
+  return(sample_data)
+
+}
