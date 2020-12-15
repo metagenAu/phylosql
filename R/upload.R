@@ -158,6 +158,9 @@ upload_cms_data_Long<-
     if(ncol(data)!=3){
       stop("This data is not the correct format")
     }
+    if(any(is.na(data$Level))){
+      stop("Some cells contain NAs. Delete these and reattempt upload.")
+    }
 
     si<- dplyr::as_tibble(
       dplyr::tbl(con,database))
