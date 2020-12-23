@@ -165,9 +165,9 @@ upload_cms_data_Long<-
     si<- dplyr::as_tibble(
       dplyr::tbl(con,database))
 
-    existingID<- paste0(si$MetagenNumber)
-    newID<- paste0(data$MetagenNumber)
 
+    existingID<- paste0(si$MetagenNumber,si$Factor)
+    newID<- paste0(data$MetagenNumber,data$Factor)
     upload<- which(!newID %in% existingID)
     stopifnot(length(upload)>0)
     message(paste0("Uploading ",length(upload)," samples."))
