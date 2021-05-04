@@ -38,7 +38,7 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' @param con connection
 #' @keywords
 #' @import dplyr
-#' @import RMariaDB
+#' @import RMariaDB con
 #' @export
 #'
 
@@ -48,17 +48,17 @@ create_sampleInfo_table<- function(si_long, ... ){
       stop("You need to specify a database connection")
     }
 
-    si<- as_tibble(tbl(con,"labdata"))
+    si<- dplyr::as_tibble(dplyr::tbl(con,"labdata"))
     sample_info<- create_sampleInfo_table(si_long=si)
 
     if(cms_format=="long"){
 
-      cmslong<- as_tibble(tbl(con,"cmsdatalong"))
+      cmslong<- dplyr::as_tibble(dplyr::tbl(con,"cmsdatalong"))
       cms<- create_cms_table(cms_long=cmslong)
 
     }else{
 
-      cms<- data.frame(tbl(con,"cmsdata"))
+      cms<- data.frame(dplyr::tbl(con,"cmsdata"))
 
     }
 
@@ -92,6 +92,7 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' @import dplyr
 #' @import RMariaDB
 #' @import Matrix
+#' @import magrittr %>%
 #' @export
 #'
 
@@ -157,7 +158,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
 
   if(!is.null(whichTaxa)){
     tax<- tax %>%
-      filter(!!tax$SV %in% whichTaxa )
+      dplyr::filter(!!tax$SV %in% whichTaxa )
   }
 
 
@@ -206,5 +207,37 @@ create_cms_table<- function(cms_long, ...){
   sample_data$MetagenNumber<- samples
 
   return(sample_data)
+
+}
+
+
+
+#' A phylosql Function
+#'
+#'
+#' @param target_group target group of organisms. Either amplicon or other species count.
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import phyloseq
+#' @export
+#'
+
+fetch_phyloseq<-
+  function(target_group=NULL,con=get_mtgn_connection()){
+
+    if(is.null(target_group)){
+      stop("You need to specify a target group")
+    }
+  tax<- fetch_taxonomy(con=con,phylo=TRUE, database= paste0(target_group,"_tax"))
+  si<- fetch_sampleInfo(con=con)
+  sv<- fetch_asv_table(con=con,phylo=FALSE, database= paste0(target_group,"_sv"))
+  ps<- phyloseq::phyloseq(
+    phyloseq::otu_table(sv,taxa_are_rows=FALSE),
+    phyloseq::tax_table(tax),
+    phyloseq::sample_data(si)
+    )
+
+  return(ps)
 
 }

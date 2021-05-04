@@ -70,7 +70,7 @@ cms_as_cmsData<- function(data){
 
   cms_cols<-  c( "MetagenNumber","PropertyName", "SurveyID",
                  "BlockName", "CropName", "SurveyDate",
-                 "Location", "AgronomistName")
+                 "Location", "AgronomistName","TargetCropTypeName")
   data_sql<- data[ , cms_cols]
   return(data_sql)
 }
@@ -136,7 +136,7 @@ as_labData<- function(labdata){
 
 
 cms_as_longCms<- function(data){
-  data_long <- tidyr::gather(data,Factor, Level, PropertyName:AgronomistName, factor_key=TRUE)
+  data_long <- tidyr::gather(data,Factor, Level, PropertyName:TargetCropTypeName, factor_key=TRUE)
   return(data_long)
 }
 
