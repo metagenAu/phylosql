@@ -23,7 +23,7 @@ create_sampleInfo_table<- function(si_long, ... ){
     sample_data[i,match(sampleList[[i]]$variable, vars)  ]<- sampleList[[i]]$value
   }
 
-  rownames(sample_data)<- samples
+  rownames(sample_data)<- names(sampleList)
   colnames(sample_data)<- vars
   sample_data<- data.frame(sample_data)
   sample_data$MetagenNumber<- samples
@@ -201,7 +201,7 @@ create_cms_table<- function(cms_long, ...){
     sample_data[i,match(sampleList[[i]]$Factor, vars)  ]<- sampleList[[i]]$Level
   }
 
-  rownames(sample_data)<- samples
+  rownames(sample_data)<-  names(sampleList)
   colnames(sample_data)<- vars
   sample_data<- data.frame(sample_data)
   sample_data$MetagenNumber<- samples
