@@ -122,7 +122,7 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
     asv_table[i,match(sampleList[[i]]$SV, asvs)  ]<- sampleList[[i]]$Abundance
   }
 
-  rownames(asv_table)<- samples
+  rownames(asv_table) <- names(sampleList)
   colnames(asv_table)<- asvs
 
   # Set class (or not)
