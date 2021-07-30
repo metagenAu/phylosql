@@ -174,3 +174,108 @@ upload_cms_data_Long<-
     RMariaDB::dbAppendTable(con, database,value= data[upload,] )
     message("Complete.")
   }
+
+
+
+#' A phylosql Function
+#'
+#' function to upload a long format SV table to mysql database (quickly)
+#' @param data data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
+upload_bulk_sv<-
+  function (data, database = NULL, con = NULL)
+  {
+    if (is.null(con)) {
+      stop("You need to specify a database connection")
+    }
+    if (is.null(database)) {
+      stop("You need to specify a database")
+    }
+    sv <- dplyr::as_tibble(dplyr::tbl(con, database))
+    existingID <- paste0(sv$MetagenNumber, sv$SV)
+    newID <- paste0(data$MetagenNumber, data$SV)
+    upload <- which(!newID %in% existingID)
+    stopifnot(length(upload) > 0)
+    message(paste0("Uploading ", length(upload), " samples."))
+    uploadData(data=data[upload,],database)
+    message("Complete.")
+    dbDisconnect(con)
+
+  }
+
+#' A phylosql Function
+#'
+#' function to upload a taxonomy table to mysql database (quickly)
+#' @param data data to upload
+#' @param database database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+
+upload_bulk_tax<-
+  function (data, database = NULL, con = NULL)
+  {
+    if (is.null(con)) {
+      stop("You need to specify a database connection")
+    }
+    if (is.null(database)) {
+      stop("You need to specify a database")
+    }
+    tax <- dplyr::as_tibble(dplyr::tbl(con, database))
+    existingID <- paste0(tax$SV)
+    newID <- paste0(data$SV)
+    upload <- which(!newID %in% existingID)
+    stopifnot(length(upload) > 0)
+    message(paste0("Uploading ", length(upload), " samples."))
+    uploadData(data=data[upload,],database)
+    message("Complete.")
+    dbDisconnect(con)
+
+  }
+
+
+
+#' A phylosql Function
+#'
+#'  A backend function for bulk uploading data to a mysql database
+#' @param data data to upload
+#' @param tableName database to send data
+#' @param con connection
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+uploadData <-
+  function(data, # a data frame
+           tableName, # table name, possibly qualified (e.g. "my_db.customers")
+           con=get_mtgn_connection()) # arguments to DBI::dbConnect
+  {
+    TEMPFILE  <-  tempfile(fileext='.csv')
+    TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
+    query  <-  sprintf("LOAD DATA LOCAL INFILE '%s'
+INTO TABLE %s
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\\n'
+IGNORE 1 LINES;" , TEMPFILE,tableName)
+
+    write.csv(data,TEMPFILE, row.names = FALSE,quote = FALSE)
+    #on.exit(file.remove(TEMPFILE))
+
+    # CONNECT TO THE DATABASE
+
+    # SUBMIT THE UPDATE QUERY AND DISCONNECT
+    RMariaDB::dbExecute(con, query)
+    dbDisconnect(con)
+  }
+
