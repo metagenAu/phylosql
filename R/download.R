@@ -161,6 +161,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
       dplyr::filter(!!tax$SV %in% whichTaxa )
   }
 
+  tax<- gsub("\\r","",tax)
 
   if(phylo==FALSE){
 

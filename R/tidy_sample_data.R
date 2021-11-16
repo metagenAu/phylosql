@@ -48,7 +48,7 @@ ms_as_cmsData<- function(data){
                  "BlockName", "CropName", "SurveyDate",
                  "Location", "AgronomistName")
   data_sql<- data[ , cms_cols]
-
+  data_sql$TargetCropTypeName <- NA
   return(data_sql)
 
 }

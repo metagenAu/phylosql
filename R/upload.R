@@ -87,6 +87,7 @@ upload_taxonomy<-
       stop("You need to specify a database connection")
     }
 
+    data<- gsub("\\r","",data)
 
     # Preprocess data for sql here
 
