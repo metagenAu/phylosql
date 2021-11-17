@@ -155,13 +155,14 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
   }
 
   tax<- dplyr::as_tibble(dplyr::tbl(con,database))
+  tax <- dplyr::mutate_if(tax,
+                    is.character,
+                    stringr::str_replace_all, pattern = "\\r", replacement = "")
 
   if(!is.null(whichTaxa)){
     tax<- tax %>%
       dplyr::filter(!!tax$SV %in% whichTaxa )
   }
-
-  tax<- gsub("\\r","",tax)
 
   if(phylo==FALSE){
 
@@ -171,6 +172,8 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
     SV<- tax$SV
     tax<- tax[,-1]
     tax<- as.matrix(tax)
+    tax<- gsub("NA",NA,tax)
+
     rownames(tax)<- SV
   }
    return(tax)
