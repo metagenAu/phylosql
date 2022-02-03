@@ -13,7 +13,7 @@ read_masterSheet<-
     lab_path="C:/Users/Chris/Metagen/Lab - master sample sheet/master_sample_sheet_v3.0.xlsx"
     ){
 
-  cols<- c("text",rep("numeric",7),rep("text",13),"numeric")
+  cols<- c("text",rep("numeric",7),rep("text",13),rep("numeric",3))
   sdata1<- readxl::read_xlsx(lab_path, sheet="Data formatted for R",col_types=cols)
 
   sdata1[sdata1=="NA"]<- NA
@@ -92,7 +92,9 @@ as_labData<- function(labdata){
   lab_cols<-   c("pH", "MetagenNumber",
                  "ActiveCarbon", "AggregateStability",
                  "Phosphatase", "B_Glucosidase",
-                 "DNA.conc...ng.ul." ,"SoilMoisture")
+                 "DNA.conc...ng.ul." ,"SoilMoisture"
+                 # ,"SoilWW","SoilDW"
+  )
 
 
   lab_sql<- labdata[ , lab_cols]
@@ -112,6 +114,8 @@ as_labData<- function(labdata){
   lab_sql$B_Glucosidase[which(lab_sql$B_Glucosidase==0)]<- NA
   lab_sql$DNAConc[which(lab_sql$DNAConc==0)]<- NA
   lab_sql$SoilMoisture[which(lab_sql$SoilMoisture< 0)]<- NA
+  #lab_sql$SoilDW[which(lab_sql$DW< 0)]<- NA
+ # lab_sql$SoilWW[which(lab_sql$WW< 0)]<- NA
 
   lab_long<- reshape2::melt(lab_sql)
   lab_longf<- lab_long %>% dplyr::filter( !is.na(value))
@@ -121,6 +125,22 @@ as_labData<- function(labdata){
 }
 
 
+#' A phylosql Function
+#'
+#' formats lab to for sql upload
+#' @param labdata data to format
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+
+fix_soil_moisture<-
+  function(labdata){
+
+   soilMoisture <-  labdata$SoilWW/labdata$SoilWW
+   labdata$SoilMoisture[which(!is.na(soilMoisture))]<- soilMoisture[which(!is.na(soilMoisture))]
+   labdata
+}
 
 
 #' A phylosql Function
