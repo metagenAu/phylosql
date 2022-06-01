@@ -177,3 +177,89 @@ misc_as_longCms<- function(data){
   data_long <- gather(cmsdata,Factor, Level, cols[2]:cols[length(cols)], factor_key=TRUE)
   return(data_long)
 }
+
+
+
+
+#' A phylosql Function
+#'
+#' formats misc data to cms data
+#' @param labdata data to format
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import tidyr
+#' @export
+#'
+
+fix_soil_moisture<-
+  function (labdata)
+  {
+    not_nas<- which(!is.na(labdata$SoilDW))
+
+    soilMoisture<- 1-(na.omit(labdata$SoilDW)/ na.omit(labdata$SoilWW))
+
+    labdata$SoilMoisture[not_nas] <- soilMoisture
+    labdata$SoilMoisture[(labdata$SoilMoisture>1|labdata$SoilMoisture< 0)]<- NA
+
+    labdata
+  }
+
+
+
+#' A phylosql Function
+#'
+#' formats misc data to cms data
+#' @param labdata data to format
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import tidyr
+#' @export
+#'
+clean_dna_yields<-
+  function(dnas){
+
+
+    above<- which(grepl(">",dnas$DNA))
+    below<- which(grepl("<",dnas$DNA))
+    dnas$DNA<- gsub('>',"",dnas$DNA)
+    dnas$DNA<- gsub('<',"",dnas$DNA)
+
+    dnas$range<- "inrange"
+
+    if(length(above)>0){
+
+      dnas$range[above]<-"above"
+
+    }
+
+    if(length(below)>0){
+
+      dnas$range[below]<-"below"
+
+    }
+
+    dnas
+  }
+
+
+#' A phylosql Function
+#'
+#' formats misc data to cms data
+#' @param dna data to format
+#' @param dna_elution_volume
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import tidyr
+#' @export
+#'
+transform_dna_yield_to_kg<-
+  function(dna,dna_elution_volume=2000){
+
+   dna * dna_elution_volume * 3.33 * 1.55 * 10* 1e-6
+
+  }
+
+
