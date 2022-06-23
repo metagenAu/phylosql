@@ -137,7 +137,7 @@ as_labData<- function(labdata){
 fix_soil_moisture<-
   function(labdata){
 
-   soilMoisture <-  labdata$SoilWW/labdata$SoilWW
+   soilMoisture <-  labdata$SoilDW/labdata$SoilWW
    labdata$SoilMoisture[which(!is.na(soilMoisture))]<- soilMoisture[which(!is.na(soilMoisture))]
    labdata
 }
