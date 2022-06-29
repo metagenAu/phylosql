@@ -38,7 +38,7 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' @param con connection
 #' @keywords
 #' @import dplyr
-#' @import RMariaDB con
+#' @import RMariaDB
 #' @export
 #'
 
@@ -92,7 +92,7 @@ create_sampleInfo_table<- function(si_long, ... ){
 #' @import dplyr
 #' @import RMariaDB
 #' @import Matrix
-#' @import magrittr %>%
+#' @import magrittr
 #' @export
 #'
 
