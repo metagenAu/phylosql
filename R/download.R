@@ -125,11 +125,16 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
   rownames(asv_table) <- names(sampleList)
   colnames(asv_table)<- asvs
 
+  rm(asvlong)
+  rm(sampleList)
+
+
   # Set class (or not)
-  if(phylo==FALSE){
+ # if(phylo==FALSE){
   asv_table<-  as(asv_table,"dgCMatrix")
-  attr(asv_table, "type")<- "abundance"
-  }
+  gc()
+  #attr(asv_table, "type")<- "abundance"
+ # }
 
   return(asv_table)
 
@@ -176,6 +181,7 @@ fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phy
 
     rownames(tax)<- SV
   }
+  gc()
    return(tax)
 
 }

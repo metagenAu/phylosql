@@ -5,8 +5,8 @@
 \title{A phylosql Function}
 \usage{
 read_masterSheet(
- 
-    lab_path = "C:/Users/Chris/Metagen/Lab - master sample sheet/master_sample_sheet_v3.0.xlsx"
+  lab_path =
+    "C:/Users/Chris/Metagen/Lab - master sample sheet/master_sample_sheet_v3.0.xlsx"
 )
 }
 \arguments{
