@@ -6,6 +6,7 @@
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
+#' @import Matrix
 #' @export
 #'
 
