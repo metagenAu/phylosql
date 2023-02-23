@@ -76,11 +76,66 @@ create_sampleInfo_table<- function(si_long, ... ){
       sampleInfo<- subset(sampleInfo,flist)
     }
 
-    class(sampleInfo)<- c(class(sampleInfo), "sampledata")
+   # class(sampleInfo)<- c(class(sampleInfo), "sampledata")
     rownames(sampleInfo)<- sampleInfo$MetagenNumber
     return(sampleInfo)
 
   }
+
+
+
+#' A phylosql Function
+#'
+#'
+#' @param phylo logical
+#' @param database database to send data
+#' @param con connection
+#' @param whichSamples select specific samples to access
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import Matrix
+#' @import magrittr
+#' @export
+#'
+
+fetch_asv_table_sparse<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
+
+if(is.null(con)){
+  stop("You need to specify a database connection")
+}
+# fetch data
+asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
+
+if(!is.null(whichSamples)){
+  asv_long<- asv_long %>%
+    filter(!!asv_long$MetagenNumber %in% whichSamples )
+}
+
+asv_long = asv_long[order(asv_long$MetagenNumber,asv_long$SV),]
+gc()
+asvs<- unique(asv_long$SV)
+samples<- unique(asv_long$MetagenNumber)
+
+asv_table <-
+  Matrix::sparseMatrix(
+    i = asv_long$MetagenNumber %>% as.factor %>% as.numeric,
+    j = asv_long$SV %>% as.factor %>% as.numeric ,
+    x = asv_long$Abundance,
+    dimnames = list(samples,asvs)
+  )
+
+
+
+rm(asv_long)
+
+gc()
+
+return(asv_table)
+
+}
+
+
 
 #' A phylosql Function
 #'
@@ -251,4 +306,54 @@ fetch_phyloseq<-
 
   return(ps)
 
-}
+  }
+
+
+
+#' A phylosql Function
+#'
+#'
+#' @param path
+#' @param key
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import phyloseq
+#' @export
+#'
+get_mtgn_connection<-
+  function(path=NULL,key=NULL){
+
+    if(is.null(path)|is.null(key)){
+
+      stop('No path to key detected.')
+
+    }
+    file<-
+      tryCatch({
+        read.csv( path, header=T)
+      },
+      error=
+        function(e){
+          return(NA)
+        })
+
+    if(class(file)=='data.frame'){
+
+      message("Fetching connection...")
+      con<-
+        DBI::dbConnect(
+          RMariaDB::MariaDB(),
+          host=file$host,
+          dbname=file$dbname,
+          port=file$port,
+          user=file$user,
+          password=key)
+      message("Complete ;)")
+      return(con)
+
+    }else{
+      stop("Oops! No secret key found.")
+    }
+
+  }
