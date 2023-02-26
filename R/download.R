@@ -285,7 +285,7 @@ create_cms_table<- function(cms_long, ...){
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
-#' @import phyloseq
+#' @import phyloseqSparse
 #' @export
 #'
 
@@ -298,10 +298,10 @@ fetch_phyloseq<-
   tax<- fetch_taxonomy(con=con,phylo=TRUE, database= paste0(target_group,"_tax"))
   si<- fetch_sampleInfo(con=con)
   sv<- fetch_asv_table(con=con,phylo=FALSE, database= paste0(target_group,"_sv"))
-  ps<- phyloseq::phyloseq(
-    phyloseq::otu_table(sv,taxa_are_rows=FALSE),
-    phyloseq::tax_table(tax),
-    phyloseq::sample_data(si)
+  ps<- phyloseqSparse::phyloseq(
+    phyloseqSparse::otu_table(sv,taxa_are_rows=FALSE),
+    phyloseqSparse::tax_table(tax),
+    phyloseqSparse::sample_data(si)
     )
 
   return(ps)
@@ -318,7 +318,6 @@ fetch_phyloseq<-
 #' @keywords
 #' @import dplyr
 #' @import RMariaDB
-#' @import phyloseq
 #' @export
 #'
 get_mtgn_connection<-
