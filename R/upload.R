@@ -262,8 +262,9 @@ uploadData <-
            tableName, # table name, possibly qualified (e.g. "my_db.customers")
            con=get_mtgn_connection()) # arguments to DBI::dbConnect
   {
-    TEMPFILE  <-  tempfile(fileext='.csv')
-    TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
+   # TEMPFILE  <-  write.csv(fileext='.csv')
+   # TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
+    TEMPFILE = 'bulk_upload1.csv'
     query  <-  sprintf("LOAD DATA LOCAL INFILE '%s'
 INTO TABLE %s
 FIELDS TERMINATED BY ','
