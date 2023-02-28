@@ -323,11 +323,11 @@ fetch_phyloseq<-
 get_mtgn_connection<-
   function(path=NULL,key=NULL){
 
-    if(is.null(path)|is.null(key)){
+   # if(is.null(path)|is.null(key)){
 
-      stop('No path to key detected.')
+   #   stop('No path to key detected.')
 
-    }
+  #  }
     file<-
       tryCatch({
         read.csv( path, header=T)
@@ -341,7 +341,7 @@ get_mtgn_connection<-
 
       message("Fetching connection...")
       con<-
-        DBI::dbConnect(
+        RMariaDB::dbConnect(
           RMariaDB::MariaDB(),
           host=file$host,
           dbname=file$dbname,
