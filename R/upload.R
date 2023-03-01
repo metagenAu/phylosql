@@ -238,6 +238,7 @@ upload_bulk_tax<-
     upload <- which(!newID %in% existingID)
     stopifnot(length(upload) > 0)
     message(paste0("Uploading ", length(upload), " samples."))
+    print(paste0('Con file is: ',con))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
