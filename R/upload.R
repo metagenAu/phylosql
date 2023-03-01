@@ -238,7 +238,7 @@ upload_bulk_tax<-
     upload <- which(!newID %in% existingID)
     stopifnot(length(upload) > 0)
     message(paste0("Uploading ", length(upload), " samples."))
-    uploadData(data=data[upload,],database)
+    uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
 
@@ -260,7 +260,7 @@ upload_bulk_tax<-
 uploadData <-
   function(data, # a data frame
            tableName, # table name, possibly qualified (e.g. "my_db.customers")
-           con=get_mtgn_connection()) # arguments to DBI::dbConnect
+           con=NULL) # arguments to DBI::dbConnect
   {
    # TEMPFILE  <-  write.csv(fileext='.csv')
    # TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
