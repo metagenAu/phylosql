@@ -199,6 +199,7 @@ upload_bulk_sv<-
     if (is.null(database)) {
       stop("You need to specify a database")
     }
+    print(con)
     sv <- dplyr::as_tibble(dplyr::tbl(con, database))
     existingID <- paste0(sv$MetagenNumber, sv$SV)
     newID <- paste0(data$MetagenNumber, data$SV)
