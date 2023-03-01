@@ -205,7 +205,7 @@ upload_bulk_sv<-
     upload <- which(!newID %in% existingID)
     stopifnot(length(upload) > 0)
     message(paste0("Uploading ", length(upload), " samples."))
-    uploadData(data=data[upload,],database)
+    uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
 
