@@ -270,14 +270,17 @@ INTO TABLE %s
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\\n'
 IGNORE 1 LINES;" , TEMPFILE,tableName)
+    print(query)
 
     write.csv(data,TEMPFILE, row.names = FALSE,quote = FALSE)
     #on.exit(file.remove(TEMPFILE))
 
     # CONNECT TO THE DATABASE
+    print(con)
 
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
     dbDisconnect(con)
+    on.exit(file.remove(TEMPFILE))
   }
 

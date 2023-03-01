@@ -341,7 +341,7 @@ get_mtgn_connection<-
 
       message("Fetching connection...")
       con<-
-        RMariaDB::dbConnect(
+        DBI::dbConnect(
           RMariaDB::MariaDB(),
           host=file$host,
           dbname=file$dbname,
