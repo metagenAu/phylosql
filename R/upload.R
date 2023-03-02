@@ -262,7 +262,7 @@ upload_bulk_tax<-
 uploadData <-
   function(data, # a data frame
            tableName, # table name, possibly qualified (e.g. "my_db.customers")
-           con=NULL) # arguments to DBI::dbConnect
+           con) # arguments to DBI::dbConnect
   {
    # TEMPFILE  <-  write.csv(fileext='.csv')
    # TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
