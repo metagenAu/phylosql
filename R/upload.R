@@ -199,7 +199,6 @@ upload_bulk_sv<-
     if (is.null(database)) {
       stop("You need to specify a database")
     }
-    print(con)
     sv <- dplyr::as_tibble(dplyr::tbl(con, database))
     existingID <- paste0(sv$MetagenNumber, sv$SV)
     newID <- paste0(data$MetagenNumber, data$SV)
@@ -239,7 +238,6 @@ upload_bulk_tax<-
     upload <- which(!newID %in% existingID)
     stopifnot(length(upload) > 0)
     message(paste0("Uploading ", length(upload), " samples."))
-    print(paste0('Con file is: ',con))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
@@ -272,14 +270,10 @@ INTO TABLE %s
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\\n'
 IGNORE 1 LINES;" , TEMPFILE,tableName)
-    print(query)
 
     write.csv(data,TEMPFILE, row.names = FALSE,quote = FALSE)
-    #on.exit(file.remove(TEMPFILE))
-
+    #
     # CONNECT TO THE DATABASE
-    print(con)
-
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
     dbDisconnect(con)
