@@ -4,7 +4,7 @@
 \alias{uploadData}
 \title{A phylosql Function}
 \usage{
-uploadData(data, tableName, con = get_mtgn_connection())
+uploadData(data, tableName, con)
 }
 \arguments{
 \item{data}{data to upload}

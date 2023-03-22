@@ -203,11 +203,12 @@ upload_bulk_sv<-
     existingID <- paste0(sv$MetagenNumber, sv$SV)
     newID <- paste0(data$MetagenNumber, data$SV)
     upload <- which(!newID %in% existingID)
-    stopifnot(length(upload) > 0)
-    message(paste0("Uploading ", length(upload), " samples."))
+    if(length(upload) > 0){
+      message(paste0("Uploading ", length(upload), " samples."))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
+    }
 
   }
 
@@ -236,11 +237,12 @@ upload_bulk_tax<-
     existingID <- paste0(tax$SV)
     newID <- paste0(data$SV)
     upload <- which(!newID %in% existingID)
-    stopifnot(length(upload) > 0)
+    if(length(upload) > 0){
     message(paste0("Uploading ", length(upload), " samples."))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
     dbDisconnect(con)
+    }
 
   }
 
