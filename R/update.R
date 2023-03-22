@@ -25,7 +25,7 @@ delete_data_by_sample<-
     query  <-  sprintf("DELETE FROM %s WHERE MetagenNumber IN (%s)",  database, paste0(samples,collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
-    dbDisconnect(con)
+   # dbDisconnect(con)
     message("Complete.")
 
   }
@@ -186,7 +186,7 @@ change_metagen_number<-
         }
 
         # SUBMIT THE UPDATE QUERY AND DISCONNECT
-        dbDisconnect(con)
+      #  dbDisconnect(con)
         message("Complete.")
 
       }
@@ -220,7 +220,7 @@ delete_data_by_sample_custom<-
     query  <-  sprintf("DELETE FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
-    dbDisconnect(con)
+  #  dbDisconnect(con)
     message("Complete.")
 
   }

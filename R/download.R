@@ -382,7 +382,7 @@ fetch_asvs_by_sample<-
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     res <- dbSendQuery(get_mtgn_connection(), query)
     df <- dbFetch(res)
-    dbDisconnect(con)
+    #dbDisconnect(con)
     message("Complete.")
     df
 
@@ -461,7 +461,7 @@ fetch_taxonomy_by_asv<-
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     res <- dbSendQuery(get_mtgn_connection(), query)
     df <- dbFetch(res)
-    dbDisconnect(con)
+    #dbDisconnect(con)
     message("Complete.")
     tax <- dplyr::mutate_if(df,
                             is.character,

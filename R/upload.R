@@ -207,7 +207,7 @@ upload_bulk_sv<-
       message(paste0("Uploading ", length(upload), " samples."))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
-    dbDisconnect(con)
+   # dbDisconnect(con)
     }
 
   }
@@ -241,7 +241,7 @@ upload_bulk_tax<-
     message(paste0("Uploading ", length(upload), " samples."))
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
-    dbDisconnect(con)
+   # dbDisconnect(con)
     }
 
   }
@@ -278,7 +278,7 @@ IGNORE 1 LINES;" , TEMPFILE,tableName)
     # CONNECT TO THE DATABASE
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
-    dbDisconnect(con)
+    #dbDisconnect(con)
     on.exit(file.remove(TEMPFILE))
   }
 
