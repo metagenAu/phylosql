@@ -95,9 +95,9 @@ update_sv<-
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
 
-    try(delete_data_by_sample(con=con, database=database,samples=unique(newdata$MetagenNumber)))
+    try(delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber)))
 
-    upload_bulk_sv(con=con,database= database, data=newdata)
+    upload_bulk_sv(con=eval(parse(text = paste0(con))),database= database, data=newdata)
 
      }else{
 
@@ -134,9 +134,9 @@ update_labdata<-
 
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
-    try(delete_data_by_sample(con=con, database=database,samples=unique(newdata$MetagenNumber)))
+    try(delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber)))
 
-    phylosql::upload_lab_data(con=con, data=newdata)
+    phylosql::upload_lab_data(con=eval(parse(text = paste0(con))), data=newdata)
 
     }else{
 
