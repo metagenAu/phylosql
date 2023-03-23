@@ -95,7 +95,12 @@ update_sv<-
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
 
-    try(delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber)))
+    try({
+      delete_data_by_sample(con=eval(parse(text = paste0(con))),
+                            database=database,
+                            samples=unique(newdata$MetagenNumber))
+      message('Deleting existing data.')
+      })
 
     upload_bulk_sv(con=eval(parse(text = paste0(con))),database= database, data=newdata)
 
