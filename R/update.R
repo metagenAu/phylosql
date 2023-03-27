@@ -57,9 +57,9 @@ update_cms<-
 
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
-    delete_data_by_sample(con=con, database=database,samples=unique(newdata$MetagenNumber))
+    delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber))
 
-    phylosql::upload_cms_data_Long(con=con, data=newdata)
+    phylosql::upload_cms_data_Long(con=eval(parse(text = paste0(con))), data=newdata)
 
     }else{
 

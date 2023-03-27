@@ -380,7 +380,7 @@ fetch_asvs_by_sample<-
 
     query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    res <- dbSendQuery(get_mtgn_connection(), query)
+    res <- dbSendQuery(con, query)
     df <- dbFetch(res)
     #dbDisconnect(con)
     message("Complete.")
@@ -459,7 +459,7 @@ fetch_taxonomy_by_asv<-
 
     query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    res <- dbSendQuery(get_mtgn_connection(), query)
+    res <- dbSendQuery(con, query)
     df <- dbFetch(res)
     #dbDisconnect(con)
     message("Complete.")
@@ -485,3 +485,23 @@ fetch_taxonomy_by_asv<-
 
   }
 
+
+#' A phylosql Function
+#'
+#'
+#' @param database
+#' @param con
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+get_svs<-
+  function(database=NULL, con=NULL){
+
+    query  <-  sprintf("SELECT `SV` FROM %s",  database)
+    res <- dbSendQuery(con, query)
+    df <- dbFetch(res)
+    unique(df$SV)
+
+}
