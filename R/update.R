@@ -22,7 +22,9 @@ delete_data_by_sample<-
    # si<- dplyr::as_tibble(
    #   dplyr::tbl(con,database))
 
-    query  <-  sprintf("DELETE FROM %s WHERE MetagenNumber IN (%s)",  database, paste0(samples,collapse=', '))
+    samples = unique(samples)
+
+    query  <-  sprintf("DELETE FROM %s WHERE MetagenNumber IN (%s)",  database, paste0(add_quotes(samples),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
    # dbDisconnect(con)
@@ -221,8 +223,10 @@ delete_data_by_sample_custom<-
 
     # si<- dplyr::as_tibble(
     #   dplyr::tbl(con,database))
+    samples = unique(samples)
 
-    query  <-  sprintf("DELETE FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
+
+    query  <-  sprintf("DELETE FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
   #  dbDisconnect(con)

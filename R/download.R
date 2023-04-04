@@ -377,8 +377,9 @@ fetch_asvs_by_sample<-
     if(is.null(con)){
       stop("You need to specify a database connection")
     }
+    samples = unique(samples)
 
-    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
+    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     res <- dbSendQuery(con, query)
     df <- dbFetch(res)
@@ -456,8 +457,9 @@ fetch_taxonomy_by_asv<-
     if(is.null(con)){
       stop("You need to specify a database connection")
     }
+    taxa<- unique(taxa)
 
-    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(samples,collapse=', '))
+    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(taxa),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     res <- dbSendQuery(con, query)
     df <- dbFetch(res)
@@ -503,5 +505,25 @@ get_svs<-
     res <- dbSendQuery(con, query)
     df <- dbFetch(res)
     unique(df$SV)
+
+}
+
+
+#' A phylosql Function to add quotes within an SQL query
+#'
+#'
+#' @param x
+#' @keywords
+#' @export
+#'
+add_quotes<- function(x){
+
+  x <- unique(x)
+  vec<- vector('list',length=length(x))
+  for(i in seq_along(x)){
+    x0<-  paste0("'",x[i],"'")
+    vec[[i]]<- x0
+  }
+  unlist(vec)
 
 }
