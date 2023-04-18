@@ -203,11 +203,12 @@ upload_bulk_sv<-
     existingID <- paste0(sv$MetagenNumber, sv$SV)
     newID <- paste0(data$MetagenNumber, data$SV)
     upload <- which(!newID %in% existingID)
-    stopifnot(length(upload) > 0)
-    message(paste0("Uploading ", length(upload), " samples."))
-    uploadData(data=data[upload,],database)
+    if(length(upload) > 0){
+      message(paste0("Uploading ", length(upload), " samples."))
+    uploadData(data=data[upload,],database,con=con)
     message("Complete.")
-    dbDisconnect(con)
+   # dbDisconnect(con)
+    }
 
   }
 
@@ -236,11 +237,12 @@ upload_bulk_tax<-
     existingID <- paste0(tax$SV)
     newID <- paste0(data$SV)
     upload <- which(!newID %in% existingID)
-    stopifnot(length(upload) > 0)
+    if(length(upload) > 0){
     message(paste0("Uploading ", length(upload), " samples."))
-    uploadData(data=data[upload,],database)
+    uploadData(data=data[upload,],database,con=con)
     message("Complete.")
-    dbDisconnect(con)
+   # dbDisconnect(con)
+    }
 
   }
 
@@ -260,7 +262,7 @@ upload_bulk_tax<-
 uploadData <-
   function(data, # a data frame
            tableName, # table name, possibly qualified (e.g. "my_db.customers")
-           con=get_mtgn_connection()) # arguments to DBI::dbConnect
+           con) # arguments to DBI::dbConnect
   {
    # TEMPFILE  <-  write.csv(fileext='.csv')
    # TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
@@ -272,12 +274,11 @@ LINES TERMINATED BY '\\n'
 IGNORE 1 LINES;" , TEMPFILE,tableName)
 
     write.csv(data,TEMPFILE, row.names = FALSE,quote = FALSE)
-    #on.exit(file.remove(TEMPFILE))
-
+    #
     # CONNECT TO THE DATABASE
-
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
     RMariaDB::dbExecute(con, query)
-    dbDisconnect(con)
+    #dbDisconnect(con)
+    on.exit(file.remove(TEMPFILE))
   }
 

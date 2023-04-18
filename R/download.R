@@ -323,11 +323,11 @@ fetch_phyloseq<-
 get_mtgn_connection<-
   function(path=NULL,key=NULL){
 
-    if(is.null(path)|is.null(key)){
+   # if(is.null(path)|is.null(key)){
 
-      stop('No path to key detected.')
+   #   stop('No path to key detected.')
 
-    }
+  #  }
     file<-
       tryCatch({
         read.csv( path, header=T)
@@ -356,3 +356,174 @@ get_mtgn_connection<-
     }
 
   }
+
+
+
+
+#' A phylosql Function
+#'
+#'
+#' @param samples
+#' @param database
+#' @param con
+#' @param col
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+fetch_asvs_by_sample<-
+  function(samples,database=NULL, con=NULL,col='MetagenNumber'){
+    if(is.null(con)){
+      stop("You need to specify a database connection")
+    }
+    samples = unique(samples)
+
+    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
+    # SUBMIT THE UPDATE QUERY AND DISCONNECT
+    res <- dbSendQuery(con, query)
+    df <- dbFetch(res)
+    #dbDisconnect(con)
+    message("Complete.")
+    df
+
+  }
+
+#' A phylosql Function
+#'
+#'
+#' @param phylo logical
+#' @param database database to send data
+#' @param con connection
+#' @param whichSamples select specific samples to access
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import Matrix
+#' @import magrittr
+#' @export
+#'
+fetch_asv_table_sparse_by_sample<-
+
+  function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
+
+  if(is.null(con)){
+    stop("You need to specify a database connection")
+  }
+  # fetch data
+
+  if(is.null(whichSamples)){
+    stop("You need to specify samples.")
+  }
+  asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=con,database=database)
+
+  asv_long = asv_long[order(asv_long$MetagenNumber,asv_long$SV),]
+  gc()
+  asvs<- unique(asv_long$SV)
+  samples<- unique(asv_long$MetagenNumber)
+
+  asv_table <-
+    Matrix::sparseMatrix(
+      i = asv_long$MetagenNumber %>% as.factor %>% as.numeric,
+      j = asv_long$SV %>% as.factor %>% as.numeric ,
+      x = asv_long$Abundance,
+      dimnames = list(samples,asvs)
+    )
+
+
+
+  rm(asv_long)
+
+  gc()
+
+  return(asv_table)
+
+}
+
+#' A phylosql Function
+#'
+#'
+#' @param taxa
+#' @param database
+#' @param con
+#' @param col
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+fetch_taxonomy_by_asv<-
+  function(taxa,database=NULL, con=NULL,col='SV'){
+    if(is.null(con)){
+      stop("You need to specify a database connection")
+    }
+    taxa<- unique(taxa)
+
+    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(taxa),collapse=', '))
+    # SUBMIT THE UPDATE QUERY AND DISCONNECT
+    res <- dbSendQuery(con, query)
+    df <- dbFetch(res)
+    #dbDisconnect(con)
+    message("Complete.")
+    tax <- dplyr::mutate_if(df,
+                            is.character,
+                            stringr::str_replace_all, pattern = "\\r", replacement = "")
+
+
+    if(phylo==FALSE){
+
+      attr(tax,"type")<- c( "taxonomy")
+
+    }else{
+      SV<- tax$SV
+      tax<- tax[,-1]
+      tax<- as.matrix(tax)
+      tax<- gsub("NA",NA,tax)
+
+      rownames(tax)<- SV
+    }
+    gc()
+    return(tax)
+
+  }
+
+
+#' A phylosql Function
+#'
+#'
+#' @param database
+#' @param con
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
+get_svs<-
+  function(database=NULL, con=NULL){
+
+    query  <-  sprintf("SELECT `SV` FROM %s",  database)
+    res <- dbSendQuery(con, query)
+    df <- dbFetch(res)
+    unique(df$SV)
+
+}
+
+
+#' A phylosql Function to add quotes within an SQL query
+#'
+#'
+#' @param x
+#' @keywords
+#' @export
+#'
+add_quotes<- function(x){
+
+  x <- unique(x)
+  vec<- vector('list',length=length(x))
+  for(i in seq_along(x)){
+    x0<-  paste0("'",x[i],"'")
+    vec[[i]]<- x0
+  }
+  unlist(vec)
+
+}
