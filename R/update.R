@@ -182,7 +182,7 @@ change_metagen_number<-
         for(j in seq_along(database)){
 
 
-        query  <-  sprintf("UPDATE '%s' SET `MetagenNumber` = '%s' WHERE (`MetagenNumber` = '%s') ;",
+        query  <-  sprintf("UPDATE `%s` SET `MetagenNumber` = '%s' WHERE (`MetagenNumber` = '%s') ;",
                            database[j],
                            paste0(new_names[j],collapse=', '),
                            paste0(old_names[j],collapse=', ')

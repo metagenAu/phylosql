@@ -527,3 +527,70 @@ add_quotes<- function(x){
   unlist(vec)
 
 }
+
+
+#' A phylosql Function to construct an asv table
+#'
+#'
+#' @param asv_long
+#' @keywords
+#' @export
+#'
+construct_asv_table<- function(asv_long){
+
+  asvs <- unique(asv_long$SV)
+  samples <- unique(asv_long$MetagenNumber)
+  rows <- length(samples)
+  cols <- length(asvs)
+  asv_table <- matrix(0L, ncol = cols, nrow = rows)
+  sampleList <- split(asv_long, asv_long$MetagenNumber)
+  for (i in seq_along(sampleList)) {
+    asv_table[i, match(sampleList[[i]]$SV, asvs)] <- sampleList[[i]]$Abundance
+  }
+  rownames(asv_table) <- names(sampleList)
+  colnames(asv_table) <- asvs
+  rm(asv_long)
+  rm(sampleList)
+  asv_table <- as(asv_table, "dgCMatrix")
+  gc()
+  return(asv_table)
+
+}
+
+#' A phylosql Function
+#'
+#'
+#' @param phylo logical
+#' @param database database to send data
+#' @param con connection
+#' @param whichSamples select specific samples to access
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @import Matrix
+#' @import magrittr
+#' @export
+#'
+fetch_asv_table_by_sample<-
+
+  function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
+
+    if(is.null(con)){
+      stop("You need to specify a database connection")
+    }
+    # fetch data
+
+    if(is.null(whichSamples)){
+      stop("You need to specify samples.")
+    }
+    asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval(parse(text = paste0(con))),database=database)
+
+
+    asv_table <- construct_asv_table(asv_long)
+
+    gc()
+
+    return(asv_table)
+
+  }
+
