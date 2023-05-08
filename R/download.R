@@ -352,7 +352,19 @@ get_mtgn_connection<-
       return(con)
 
     }else{
-      stop("Oops! No secret key found.")
+      con<-
+        dbConnect(
+          RMariaDB::MariaDB(),
+          host= "mtgn-sh.ct3nwhqmqw5a.ap-southeast-2.rds.amazonaws.com",
+          dbname="mtgn",
+          port=3306,
+          user="metagen_admin",
+          password=keyring::key_get(
+            service = "mtgn-aws",
+            username = "metagen_admin"))
+      message("Oops! No secret key found. Attempting Keyring method.")
+      return(con)
+
     }
 
   }
