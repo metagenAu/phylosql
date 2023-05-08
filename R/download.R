@@ -112,24 +112,16 @@ if(!is.null(whichSamples)){
     filter(!!asv_long$MetagenNumber %in% whichSamples )
 }
 
-asv_long = asv_long[order(asv_long$MetagenNumber,asv_long$SV),]
-gc()
-asvs<- unique(asv_long$SV)
-samples<- unique(asv_long$MetagenNumber)
+asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
+asv_long$SV<- as.factor(asv_long$SV)
 
-asv_table <-
-  Matrix::sparseMatrix(
-    i = asv_long$MetagenNumber %>% as.factor %>% as.numeric,
-    j = asv_long$SV %>% as.factor %>% as.numeric ,
-    x = asv_long$Abundance,
-    dimnames = list(samples,asvs)
-  )
-
-
+asv_table = Matrix::sparseMatrix(i = asv_long$MetagenNumber %>% as.integer,
+                                 j = asv_long$SV %>% as.integer,
+                                 x = asv_long$Abundance)
+rownames(asv_table) = levels(asv_long$MetagenNumber)
+colnames(asv_table) = levels(asv_long$SV)
 
 rm(asv_long)
-
-gc()
 
 return(asv_table)
 
@@ -429,20 +421,15 @@ fetch_asv_table_sparse_by_sample<-
   }
   asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval(parse(text = paste0(con))),database=database)
 
-  asv_long = asv_long[order(asv_long$MetagenNumber,asv_long$SV),]
   gc()
-  asvs<- unique(asv_long$SV)
-  samples<- unique(asv_long$MetagenNumber)
+  asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
+  asv_long$SV<- as.factor(asv_long$SV)
 
-  asv_table <-
-    Matrix::sparseMatrix(
-      i = asv_long$MetagenNumber %>% as.factor %>% as.numeric,
-      j = asv_long$SV %>% as.factor %>% as.numeric ,
-      x = asv_long$Abundance,
-      dimnames = list(samples,asvs)
-    )
-
-
+  asv_table = Matrix::sparseMatrix(i = asv_long$MetagenNumber %>% as.integer,
+                              j = asv_long$SV %>% as.integer,
+                              x = asv_long$Abundance)
+  rownames(asv_table) = levels(asv_long$MetagenNumber)
+  colnames(asv_table) = levels(asv_long$SV)
 
   rm(asv_long)
 
