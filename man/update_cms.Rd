@@ -4,7 +4,7 @@
 \alias{update_cms}
 \title{A phylosql Function}
 \usage{
-update_cms(newdata, database, con = NULL)
+update_cms(newdata, database = NULL, con = NULL)
 }
 \arguments{
 \item{newdata}{data to upload}

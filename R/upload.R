@@ -154,7 +154,15 @@ upload_cms_data_Long<-
   function(data,database="cmsdatalong",con=NULL){
 
     if(is.null(con)){
-      stop("You need to specify a database connection")
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
     }
     if(ncol(data)!=3){
       stop("This data is not the correct format")
@@ -193,8 +201,16 @@ upload_cms_data_Long<-
 upload_bulk_sv<-
   function (data, database = NULL, con = NULL)
   {
-    if (is.null(con)) {
-      stop("You need to specify a database connection")
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
     }
     if (is.null(database)) {
       stop("You need to specify a database")
@@ -227,8 +243,16 @@ upload_bulk_sv<-
 upload_bulk_tax<-
   function (data, database = NULL, con = NULL)
   {
-    if (is.null(con)) {
-      stop("You need to specify a database connection")
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
     }
     if (is.null(database)) {
       stop("You need to specify a database")
@@ -262,8 +286,19 @@ upload_bulk_tax<-
 uploadData <-
   function(data, # a data frame
            tableName, # table name, possibly qualified (e.g. "my_db.customers")
-           con) # arguments to DBI::dbConnect
+           con=NULL) # arguments to DBI::dbConnect
   {
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
    # TEMPFILE  <-  write.csv(fileext='.csv')
    # TEMPFILE<- normalizePath(TEMPFILE, winslash = "/")
     TEMPFILE = 'bulk_upload1.csv'

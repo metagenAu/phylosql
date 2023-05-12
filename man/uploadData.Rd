@@ -4,7 +4,7 @@
 \alias{uploadData}
 \title{A phylosql Function}
 \usage{
-uploadData(data, tableName, con)
+uploadData(data, tableName, con = NULL)
 }
 \arguments{
 \item{data}{data to upload}

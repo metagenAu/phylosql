@@ -4,7 +4,7 @@
 \alias{update_sv}
 \title{A phylosql Function}
 \usage{
-update_sv(newdata, database, con)
+update_sv(newdata, database = NULL, con = NULL)
 }
 \arguments{
 \item{newdata}{data to upload}

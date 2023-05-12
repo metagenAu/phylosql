@@ -4,7 +4,7 @@
 \alias{update_labdata}
 \title{A phylosql Function}
 \usage{
-update_labdata(newdata, database, con = NULL)
+update_labdata(newdata, database = NULL, con = NULL)
 }
 \arguments{
 \item{newdata}{data to upload}

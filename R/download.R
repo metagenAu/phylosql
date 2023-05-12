@@ -46,7 +46,16 @@ create_sampleInfo_table<- function(si_long, ... ){
   fetch_sampleInfo<-
   function(flist=NULL, con=NULL,cms_format="long"){
     if(is.null(con)){
-      stop("You need to specify a database connection")
+
+      con <-  try_fetch_connection()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
     }
 
     si<- dplyr::as_tibble(dplyr::tbl(con,"labdata"))
@@ -101,9 +110,18 @@ create_sampleInfo_table<- function(si_long, ... ){
 
 fetch_asv_table_sparse<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
-if(is.null(con)){
-  stop("You need to specify a database connection")
-}
+  if(is.null(con)){
+
+    con <-  try_fetch_connection()
+
+  }
+
+
+  if(any(class(con)=='logical')){
+
+    stop('No connection to database.')
+
+  }
 # fetch data
 asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
 
@@ -147,7 +165,16 @@ return(asv_table)
 fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
   if(is.null(con)){
-    stop("You need to specify a database connection")
+
+    con <-  try_fetch_connection()
+
+  }
+
+
+  if(any(class(con)=='logical')){
+
+    stop('No connection to database.')
+
   }
   # fetch data
   asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
@@ -204,8 +231,18 @@ fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSa
 fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phylo=FALSE){
 
   if(is.null(con)){
-    stop("You need to specify a database connection")
+
+    con <-  try_fetch_connection()
+
   }
+
+
+  if(any(class(con)=='logical')){
+
+    stop('No connection to database.')
+
+  }
+
 
   tax<- dplyr::as_tibble(dplyr::tbl(con,database))
   tax <- dplyr::mutate_if(tax,
@@ -270,87 +307,6 @@ create_cms_table<- function(cms_long, ...){
 
 
 
-#' A phylosql Function
-#'
-#'
-#' @param target_group target group of organisms. Either amplicon or other species count.
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import phyloseqSparse
-#' @export
-#'
-
-fetch_phyloseq<-
-  function(target_group=NULL,con=get_mtgn_connection()){
-
-    if(is.null(target_group)){
-      stop("You need to specify a target group")
-    }
-  tax<- fetch_taxonomy(con=con,phylo=TRUE, database= paste0(target_group,"_tax"))
-  si<- fetch_sampleInfo(con=con)
-  sv<- fetch_asv_table(con=con,phylo=FALSE, database= paste0(target_group,"_sv"))
-  ps<- phyloseqSparse::phyloseq(
-    phyloseqSparse::otu_table(sv,taxa_are_rows=FALSE),
-    phyloseqSparse::tax_table(tax),
-    phyloseqSparse::sample_data(si)
-    )
-
-  return(ps)
-
-  }
-
-
-
-#' A phylosql Function
-#'
-#'
-#' @param path
-#' @param key
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @export
-#'
-get_mtgn_connection<-
-  function(path=NULL,key=NULL){
-
-   # if(is.null(path)|is.null(key)){
-
-   #   stop('No path to key detected.')
-
-  #  }
-    file<-
-      tryCatch({
-        read.csv( path, header=T)
-      },
-      error=
-        function(e){
-          return(NA)
-        })
-
-    if(class(file)=='data.frame'){
-
-      message("Fetching connection...")
-      con<-
-        DBI::dbConnect(
-          RMariaDB::MariaDB(),
-          host=file$host,
-          dbname=file$dbname,
-          port=file$port,
-          user=file$user,
-          password=key)
-      message("Complete ;)")
-      return(con)
-
-    }else{
-      
-     stop("Oops! No secret key found.")
-
-    }
-
-  }
-
 
 
 
@@ -401,15 +357,29 @@ fetch_asv_table_sparse_by_sample<-
 
   function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
-  if(is.null(con)){
-    stop("You need to specify a database connection")
-  }
-  # fetch data
+
+    if(is.null(database)){
+      stop("You need to specify a database connection and a database")
+    }
+
+    if(is.null(con)){
+
+      con <-  try_fetch_connection_string()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
 
   if(is.null(whichSamples)){
     stop("You need to specify samples.")
   }
-  asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval(parse(text = paste0(con))),database=database)
+  asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval_con(con),database=database)
 
   gc()
   asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
@@ -444,14 +414,22 @@ fetch_asv_table_sparse_by_sample<-
 fetch_taxonomy_by_asv<-
   function(taxa,database=NULL, con=NULL,col='SV'){
     if(is.null(con)){
-      stop("You need to specify a database connection")
+
+      con <-  try_fetch_connection()
+
     }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
     taxa<- unique(taxa)
 
     query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(taxa),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    res <- dbSendQuery(con, query)
-    df <- dbFetch(res)
+    res <- dbGetQuery(con, query)
     #dbDisconnect(con)
     message("Complete.")
     tax <- dplyr::mutate_if(df,
@@ -490,9 +468,20 @@ fetch_taxonomy_by_asv<-
 get_svs<-
   function(database=NULL, con=NULL){
 
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
     query  <-  sprintf("SELECT `SV` FROM %s",  database)
-    res <- dbSendQuery(con, query)
-    df <- dbFetch(res)
+    df<- dbGetQuery(con, query)
     unique(df$SV)
 
 }
@@ -564,15 +553,30 @@ fetch_asv_table_by_sample<-
 
   function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
 
-    if(is.null(con)){
-      stop("You need to specify a database connection")
+
+    if(is.null(database)){
+      stop("You need to specify a database connection and a database")
     }
+
+    if(is.null(con)){
+
+      con <-  try_fetch_connection_string()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
     # fetch data
 
     if(is.null(whichSamples)){
       stop("You need to specify samples.")
     }
-    asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval(parse(text = paste0(con))),database=database)
+    asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval_con(con),database=database)
 
 
     asv_table <- construct_asv_table(asv_long)

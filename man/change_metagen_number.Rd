@@ -7,7 +7,7 @@
 change_metagen_number(
   old_names,
   new_names,
-  con,
+  con = NULL,
   databases = list("bacteria_sv", "eukaryota_sv", "labdata", "cmsdata")
 )
 }

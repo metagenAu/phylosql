@@ -16,11 +16,16 @@
 delete_data_by_sample<-
   function(samples,database=NULL, con=NULL){
     if(is.null(con)){
-      stop("You need to specify a database connection")
+
+      con <-  try_fetch_connection()
+
     }
 
-   # si<- dplyr::as_tibble(
-   #   dplyr::tbl(con,database))
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
 
     samples = unique(samples)
 
@@ -49,19 +54,34 @@ delete_data_by_sample<-
 #'
 update_cms<-
 
-  function(newdata,database,con=NULL){
+  function(newdata,database=NULL,con=NULL){
 
-    if(is.null(con)|is.null(database)){
+    if(is.null(database)){
       stop("You need to specify a database connection and a database")
     }
+    if(is.null(con)){
 
+      con <-  try_fetch_connection_string()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
+    if(class(con)!= 'character'){
+      'Stop'
+    }
     match_idx = match(colnames(newdata),c('MetagenNumber','Factor','Level'))
 
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
-    delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber))
+    delete_data_by_sample(con=con_eval(con), database=database,samples=unique(newdata$MetagenNumber))
 
-    phylosql::upload_cms_data_Long(con=eval(parse(text = paste0(con))), data=newdata)
+    phylosql::upload_cms_data_Long(con=con_eval(con), data=newdata)
 
     }else{
 
@@ -87,10 +107,26 @@ update_cms<-
 #'
 update_sv<-
 
-  function(newdata,database,con){
+  function(newdata,database=NULL,con=NULL){
 
-    if(is.null(con)|is.null(database)){
+    if(is.null(database)){
       stop("You need to specify a database connection and a database")
+    }
+    if(is.null(con)){
+
+      con <-  try_fetch_connection_string()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
+    if(class(con)!= 'character'){
+      stop('Error with conneciton')
     }
     match_idx = match(colnames(newdata),c('MetagenNumber','SV','Abundance'))
 
@@ -98,13 +134,13 @@ update_sv<-
 
 
     try({
-      delete_data_by_sample(con=eval(parse(text = paste0(con))),
+      delete_data_by_sample(con=eval_con(con),
                             database=database,
                             samples=unique(newdata$MetagenNumber))
       message('Deleting existing data.')
       })
 
-    upload_bulk_sv(con=eval(parse(text = paste0(con))),database= database, data=newdata)
+    upload_bulk_sv(con=eval_con(con),database= database, data=newdata)
 
      }else{
 
@@ -131,19 +167,36 @@ update_sv<-
 #'
 update_labdata<-
 
-  function(newdata,database,con=NULL){
+  function(newdata,database=NULL,con=NULL){
 
-    if(is.null(con)|is.null(database)){
+    if(is.null(database)){
       stop("You need to specify a database connection and a database")
+    }
+
+    if(is.null(con)){
+
+      con <-  try_fetch_connection_string()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
+    if(class(con)!= 'character'){
+      'Stop'
     }
 
     match_idx = match(colnames(newdata),c('MetagenNumber','value','variable'))
 
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
-    try(delete_data_by_sample(con=eval(parse(text = paste0(con))), database=database,samples=unique(newdata$MetagenNumber)))
+    try(delete_data_by_sample(con=eval_con(con), database=database,samples=unique(newdata$MetagenNumber)))
 
-    phylosql::upload_lab_data(con=eval(parse(text = paste0(con))), data=newdata)
+    phylosql::upload_lab_data(con=eval_con(con), data=newdata)
 
     }else{
 
@@ -167,11 +220,24 @@ update_labdata<-
 change_metagen_number<-
   function(old_names,
            new_names,
-           con,
+           con=NULL,
            databases=list('bacteria_sv',
                           'eukaryota_sv',
                           'labdata',
                           'cmsdata')){
+
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
 
     if(length(old_names)==length(new_names)){
 
@@ -218,7 +284,20 @@ change_metagen_number<-
 delete_data_by_sample_custom<-
   function(samples,database=NULL, con=NULL,col=NULL){
     if(is.null(con)){
-      stop("You need to specify a database connection")
+
+      con <-  try_fetch_connection()
+
+    }
+
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
+    if(is.null(database)|is.null(col)){
+      stop('missing database or column')
     }
 
     # si<- dplyr::as_tibble(
