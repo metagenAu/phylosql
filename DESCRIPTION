@@ -12,11 +12,10 @@ License: use_mit_license(),
 Imports:
     phyloseqSparse,
     Matrix ,
-    RMariaDB,
+    RMariaDB(>= 1.2.2),
     dplyr (>= 1.0.0),
-    readxl,
     tidyr (>= 1.1.0),
-    pool (>=1.0)
+    pool ( >= 1.0.1)
     
     
 Encoding: UTF-8
