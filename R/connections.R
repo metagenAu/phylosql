@@ -72,6 +72,7 @@ get_mtgn_connection<-
 set_pool<- function(path,key){
 
   sql_creds <- new.env()
+  file = read.csv(path)
 
   pool <- dbPool(
     drv= RMariaDB::MariaDB(),
