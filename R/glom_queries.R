@@ -84,6 +84,8 @@ sql_phyloseq_by_tax_glom<-
       con=eval_con(con),
       query)
 
+    results = results %>% dplyr::filter(Abundance>0)
+
     select_cols_tax = c(paste0(tax,'.',tax_base)) %>% paste(collapse=', ')
     tax_query =
       paste0(c(
@@ -186,11 +188,9 @@ sql_phyloseq_by_sample<-
 
     tax_base =  res$Field
 
-        sv_cols = c('SV','MetagenNumber') #,'Abundance')
+    sv_cols = c('SV','MetagenNumber') #,'Abundance')
     sv_cols  = paste0(sv,'.',sv_cols )
 
-    grouping_cols =  c(paste0(sv,'.MetagenNumber'), tax_cols) %>% paste(collapse=', ')
-    select_cols = c(tax_cols,sv_cols) %>% paste(collapse=', ')
 
 
     query =
@@ -207,6 +207,9 @@ sql_phyloseq_by_sample<-
 
     results <- dbGetQuery(
       con=eval_con(con), query)
+
+    results = results %>% dplyr::filter(Abundance>0)
+
 
     sv_keep = c('SV','MetagenNumber','Abundance')
 
@@ -316,6 +319,9 @@ sql_phyloseq_by_sample_and_tax_glom<-
 
     results <- dbGetQuery(
       con=eval_con(con), query)
+
+    results = results %>% dplyr::filter(Abundance>0)
+
 
     sv_keep = c('SV','MetagenNumber','Abundance')
 
