@@ -12,7 +12,7 @@ License: use_mit_license(),
 Imports:
     phyloseqSparse,
     Matrix ,
-    RMariaDB(>= 1.2.0),
+    RMariaDB,
     dplyr (>= 1.0.0),
     tidyr (>= 1.1.0),
     pool (>= 1.0.0),
