@@ -1,33 +1,3 @@
-#' A phylosql Function
-#'
-#'
-#' @param lab_path path to lab data
-#' @keywords
-#' @import readxl
-#' @export
-#'
-
-
-read_masterSheet<-
-  function(
-    lab_path="C:/Users/Chris/Metagen/Lab - master sample sheet/master_sample_sheet_v3.0.xlsx"
-    ){
-
-  cols<- c("text",rep("numeric",7),rep("text",13),rep("numeric",3))
-  sdata1<- readxl::read_xlsx(lab_path, sheet="Data formatted for R",col_types=cols)
-
-  sdata1[sdata1=="NA"]<- NA
-  remove<- which(sdata1$MetagenNumber==0 | is.na(sdata1$MetagenNumber))
-
-  if(length(remove)>0){
-    sdata1<- sdata1[-remove,]
-  }
-
-  sdata1<- data.frame(sdata1)
-  rownames(sdata1)<- sdata1$MetagenNumber
-
-  return(sdata1)
-}
 
 
 

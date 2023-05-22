@@ -11,13 +11,11 @@ Description: What the package does (one paragraph).
 License: use_mit_license(),
 Imports:
     phyloseqSparse,
-    Matrix ,
+    Matrix,
     RMariaDB,
     dplyr (>= 1.0.0),
     tidyr (>= 1.1.0),
-    pool (>= 1.0.0),
-    
-    
+    pool (>= 1.0.0)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
