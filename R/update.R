@@ -194,7 +194,13 @@ update_labdata<-
 
     if(length(match_idx)==3 & sum(is.na(match_idx))==0){
 
-    try(delete_data_by_sample(con=eval_con(con), database=database,samples=unique(newdata$MetagenNumber)))
+    try(
+      delete_labdata_by_sample_and_var(
+      con=eval_con(con),
+      database=database,
+      samples=newdata$MetagenNumber,
+      vars= newdata$variable)
+    )
 
     phylosql::upload_lab_data(con=eval_con(con), data=newdata)
 
@@ -312,4 +318,49 @@ delete_data_by_sample_custom<-
     message("Complete.")
 
   }
+#' A phylosql Function
+#'
+#' function to delete to mysql database
+#' @param samples data to upload
+#' @param database database to send data
+#' @param con connection
+#' @param vars
+#' @keywords
+#' @import dplyr
+#' @import RMariaDB
+#' @export
+#'
 
+delete_labdata_by_sample_and_var<-
+  function(samples,vars, database=NULL, con=NULL){
+    if(is.null(con)){
+
+      con <-  try_fetch_connection()
+
+    }
+
+    if(any(class(con)=='logical')){
+
+      stop('No connection to database.')
+
+    }
+
+    samples = unique(samples)
+
+    queries =
+      sprintf("DELETE FROM %s WHERE MetagenNumber = `%s` AND variable = `%s` ",
+            'labdata',
+            samples,
+            vars
+
+    )
+    for( query in queries){
+
+      RMariaDB::dbExecute(con, query)
+
+    }
+    # SUBMIT THE UPDATE QUERY AND DISCONNECT
+    # dbDisconnect(con)
+    message("Complete.")
+
+  }
