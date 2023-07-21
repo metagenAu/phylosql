@@ -263,7 +263,7 @@ upload_bulk_tax<-
     upload <- which(!newID %in% existingID)
     if(length(upload) > 0){
     message(paste0("Uploading ", length(upload), " samples."))
-    data<- gsub("\\\r","",data)
+    data<- gsub("\\\r","",as.matrix(data))
 
     uploadData(data=data[upload,],database,con=con)
     message("Complete.")
