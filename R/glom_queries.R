@@ -128,7 +128,7 @@ sql_phyloseq_by_tax_glom<-
     tax = tax[!duplicated(tax$SV),]
     rownames(tax)<- tax$SV
     tax = tax %>% dplyr::select(-SV)
-    tax = gsub('\\\r','',tax)
+    tax = gsub('\\\r','',as.matrix(tax))
 
     si<- fetch_sampleInfo(con=eval_con(con))
     rm(results)
@@ -233,7 +233,7 @@ sql_phyloseq_by_sample<-
     tax = tax[!duplicated(tax$SV),]
     rownames(tax)<- tax$SV
     tax = tax %>% dplyr::select(-SV)
-    tax = gsub('\\\r','',tax)
+    tax = gsub('\\\r','',as.matrix(tax))
 
     si<- fetch_sampleInfo(con=eval_con(con))
 
@@ -347,7 +347,7 @@ sql_phyloseq_by_sample_and_tax_glom<-
     tax = tax[!duplicated(tax$SV),]
     rownames(tax)<- tax$SV
     tax = tax %>% dplyr::select(-SV)
-    tax = gsub('\\\r','',tax)
+    tax = gsub('\\\r','',as.matrix(tax))
 
     si<- fetch_sampleInfo(con=eval_con(con))
 
