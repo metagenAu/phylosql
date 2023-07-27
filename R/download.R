@@ -331,8 +331,7 @@ fetch_asvs_by_sample<-
 
     query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
     # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    res <- dbSendQuery(con, query)
-    df <- dbFetch(res)
+    df <- dbGetQuery(con, query)
     #dbDisconnect(con)
     message("Complete.")
     df
