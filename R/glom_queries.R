@@ -106,6 +106,7 @@ sql_phyloseq_by_tax_glom<-
     results$SV<- tax_results$SV[match(query_id,tax_id)]
     rm(tax_results)
     gc()
+    results = results[-which(is.na(results$SV)),]
 
     sv_keep = c('SV','MetagenNumber','Abundance')
 
