@@ -49,6 +49,7 @@ sql_phyloseq_by_tax_glom<-
     tax_base =  res$Field[1:id]
     tax_cols = paste0(tax,'.',tax_base)
     tax_cols = tax_cols[!grepl('SV',tax_cols)]
+    print(tax_cols)
 
     grouping_cols =  c(tax_cols,'SV_rep') %>% paste(collapse=', ')
     select_cols = c(tax_cols,paste0(sv,'.MetagenNumber')) %>% paste(collapse=', ')
@@ -80,11 +81,14 @@ sql_phyloseq_by_tax_glom<-
       )
 
 
-    results <- dbGetQuery(
+    results <- DBI::dbGetQuery(
       con=eval_con(con),
       query)
 
     results = results %>% dplyr::filter(Abundance>0)
+
+    print(paste0('results: ',dim(results)) 
+    print(head(results))
 
     select_cols_tax = c(paste0(tax,'.',tax_base)) %>% paste(collapse=', ')
     tax_query =
@@ -95,14 +99,17 @@ sql_phyloseq_by_tax_glom<-
 
 
     tax_results <-
-      dbGetQuery(
+      DBI::dbGetQuery(
       con=eval_con(con),
       tax_query)
+          
+    print(paste0('results: ',dim(tax_results)) 
+    print(head(tax_results))
 
     query_id = apply(results %>% dplyr::select(-MetagenNumber,-Abundance),1,function(x)paste0(x,collapse=';'))
 
     tax_id = apply(tax_results %>% dplyr::select(-SV),1,function(x)paste0(x,collapse=';'))
-
+    print(paste0('match query: ',match(query_id,tax_id)))
     results$SV<- tax_results$SV[match(query_id,tax_id)]
     rm(tax_results)
     gc()
@@ -111,6 +118,7 @@ sql_phyloseq_by_tax_glom<-
     sv_keep = c('SV','MetagenNumber','Abundance')
 
     asv_long = results[ , sv_keep ]
+    print(paste0('asv dim: ',dim(asv_long)))
 
     asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
     asv_long$SV<- as.factor(asv_long$SV)
@@ -119,6 +127,8 @@ sql_phyloseq_by_tax_glom<-
                                      j = asv_long$SV %>% as.integer,
                                      x = asv_long$Abundance)
 
+    print(paste0('asv dim: ' ,dim(asv_table)))
+               
     rownames(asv_table) = levels(asv_long$MetagenNumber)
     colnames(asv_table) = levels(asv_long$SV)
 
@@ -127,9 +137,12 @@ sql_phyloseq_by_tax_glom<-
 
     tax<- results[,  tax_base ]
     tax = tax[!duplicated(tax$SV),]
+    print(paste0('tax dim: ' ,dim(tax)))
+
     rownames(tax)<- tax$SV
     tax = tax %>% dplyr::select(-SV)
     tax = gsub('\\\r','',as.matrix(tax))
+    print(paste0('tax dim: ' ,dim(tax)))
 
     si<- fetch_sampleInfo(con=eval_con(con))
     rm(results)
