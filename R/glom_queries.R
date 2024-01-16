@@ -87,7 +87,7 @@ sql_phyloseq_by_tax_glom<-
 
     results = results %>% dplyr::filter(Abundance>0)
 
-    print(paste0('results: ',dim(results)) 
+    print(paste0('results: ',dim(results))) 
     print(head(results))
 
     select_cols_tax = c(paste0(tax,'.',tax_base)) %>% paste(collapse=', ')
@@ -103,7 +103,7 @@ sql_phyloseq_by_tax_glom<-
       con=eval_con(con),
       tax_query)
           
-    print(paste0('results: ',dim(tax_results)) 
+    print(paste0('results: ',dim(tax_results))) 
     print(head(tax_results))
 
     query_id = apply(results %>% dplyr::select(-MetagenNumber,-Abundance),1,function(x)paste0(x,collapse=';'))
