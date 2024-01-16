@@ -110,14 +110,17 @@ sql_phyloseq_by_tax_glom<-
 
     sv_keep = c('SV','MetagenNumber','Abundance')
 
-    asv_long = results[ , sv_keep ]
+    asv_long = results[ , sv_keep ] 
+    print(dim(asv_long))
 
     asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
     asv_long$SV<- as.factor(asv_long$SV)
+    print(head(asv_long))
 
     asv_table = Matrix::sparseMatrix(i = asv_long$MetagenNumber %>% as.integer,
                                      j = asv_long$SV %>% as.integer,
                                      x = asv_long$Abundance)
+    print('made_asv')
 
     rownames(asv_table) = levels(asv_long$MetagenNumber)
     colnames(asv_table) = levels(asv_long$SV)
