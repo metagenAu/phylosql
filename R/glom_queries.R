@@ -99,9 +99,11 @@ sql_phyloseq_by_tax_glom<-
       con=eval_con(con),
       tax_query)
 
+    print(colnames(results))
+    print(colnames(tax_results))
     query_id = apply(results %>% dplyr::select(-MetagenNumber,-Abundance, -SV),1,function(x)paste0(x,collapse=';'))
 
-    tax_id = apply(tax_results %>% dpluyr::select(-SV),1,function(x)paste0(x,collapse=';'))
+    tax_id = apply(tax_results ,1,function(x)paste0(x,collapse=';'))
 
     results$SV<- tax_results$SV[match(query_id,tax_id)]
     rm(tax_results)
