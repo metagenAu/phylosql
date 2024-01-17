@@ -110,12 +110,14 @@ sql_phyloseq_by_tax_glom<-
     print(tax_id[1:20])
 
     results$SV<- tax_results$SV[match(query_id,tax_id)]
+    print(colnames(results)) 
+    print(sum(!is.na(results$SV)))
     rm(tax_results)
     gc()
     results = results[-which(is.na(results$SV)),]
 
     sv_keep = c('SV','MetagenNumber','Abundance')
-
+    print(dim(results))
     asv_long = results[ , sv_keep ]
 
     asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
