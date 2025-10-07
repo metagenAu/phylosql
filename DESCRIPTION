@@ -16,7 +16,9 @@ Imports:
     RMariaDB,
     dplyr (>= 1.0.0),
     tidyr (>= 1.1.0),
-    pool (>= 1.0.0)
+    pool (>= 1.0.0),
+    tibble (>= 3.0.0),
+    rlang (>= 1.0.0)
 Suggests:
     testthat (>= 3.0.0)
 Encoding: UTF-8

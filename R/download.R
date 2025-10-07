@@ -1,588 +1,339 @@
-
-#' A phylosql Function
+#' Pivot laboratory sample metadata to wide format
 #'
+#' @param si_long A data frame or lazy tibble containing `MetagenNumber`,
+#'   `variable`, and `value` columns.
 #'
-#' @param si_long data to upload
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import Matrix
+#' @return A data frame with one row per `MetagenNumber`.
 #' @export
-#'
+create_sampleInfo_table <- function(si_long) {
+  data <- ensure_long_format(
+    si_long,
+    id_col = "MetagenNumber",
+    key_col = "variable",
+    value_col = "value",
+    context = "sample information"
+  )
 
-create_sampleInfo_table<- function(si_long, ... ){
-
-  vars<- unique(si_long$variable)
-  samples<- unique(si_long$MetagenNumber)
-  rows<- length(samples)
-  cols<- length(vars)
-  sample_data<- matrix(NA,ncol=cols, nrow=rows)
-
-  sampleList<- split(si_long,si_long$MetagenNumber)
-
-  for(i in seq_along(sampleList)){
-    sample_data[i,match(sampleList[[i]]$variable, vars)  ]<- sampleList[[i]]$value
-  }
-
-  rownames(sample_data)<- names(sampleList)
-  colnames(sample_data)<- vars
-  sample_data<- data.frame(sample_data)
-  sample_data$MetagenNumber<- samples
-
-  return(sample_data)
+  tidyr::pivot_wider(data, names_from = "variable", values_from = "value") %>%
+    dplyr::arrange(rlang::.data$MetagenNumber) %>%
+    tibble::as_tibble()
 }
 
-#' A phylosql Function
+#' Retrieve and merge sample and CMS metadata
 #'
+#' @param flist Optional logical expression evaluated with [subset()] to filter
+#'   returned samples.
+#' @param con An existing database connection. If `NULL`, a cached connection is
+#'   reused.
+#' @param cms_format One of "long" (default) to collect the `cmsdatalong`
+#'   records or "wide" to use `cmsdata` directly.
 #'
-#' @param flist
-#' @param con connection
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
+#' @return A data frame keyed by `MetagenNumber` containing laboratory and CMS
+#'   metadata.
 #' @export
-#'
+fetch_sampleInfo <- function(flist = NULL, con = NULL, cms_format = c("long", "wide")) {
+  con_obj <- resolve_connection(con)
+  cms_format <- match.arg(cms_format)
 
-  fetch_sampleInfo<-
-  function(flist=NULL, con=NULL,cms_format="long"){
-    if(is.null(con)){
+  lab_tbl <- dplyr::tbl(con_obj, "labdata") %>%
+    dplyr::select("MetagenNumber", "variable", "value") %>%
+    dplyr::collect()
+  sample_info <- create_sampleInfo_table(lab_tbl)
 
-      con <-  try_fetch_connection()
-
+  cms_info <- switch(
+    cms_format,
+    long = {
+      cms_long <- dplyr::tbl(con_obj, "cmsdatalong") %>%
+        dplyr::select("MetagenNumber", "Factor", "Level") %>%
+        dplyr::collect()
+      create_cms_table(cms_long)
+    },
+    wide = {
+      ensure_dataframe(
+        dplyr::tbl(con_obj, "cmsdata") %>% dplyr::collect(),
+        required = c(
+          "MetagenNumber", "PropertyName", "SurveyID", "BlockName",
+          "CropName", "SurveyDate", "Location", "AgronomistName",
+          "TargetCropTypeName"
+        ),
+        context = "CMS metadata"
+      )
     }
+  )
 
+  sample_info <- dplyr::full_join(sample_info, cms_info, by = "MetagenNumber")
 
-    if(any(class(con)=='logical')){
-
-      stop('No connection to database.')
-
-    }
-
-    si<- dplyr::as_tibble(dplyr::tbl(con,"labdata"))
-    sample_info<- create_sampleInfo_table(si_long=si)
-
-    if(cms_format=="long"){
-
-      cmslong<- dplyr::as_tibble(dplyr::tbl(con,"cmsdatalong"))
-      cms<- create_cms_table(cms_long=cmslong)
-
-    }else{
-
-      cms<- data.frame(dplyr::tbl(con,"cmsdata"))
-
-    }
-
-    sampleInfo <- merge(sample_info,cms,"MetagenNumber")
-
-    missed<- which(!cms$MetagenNumber %in% sampleInfo$MetagenNumber)
-    cols<- match(colnames(cms), colnames(sampleInfo))
-
-    nsamps<- nrow(sampleInfo)
-
-    sampleInfo[(nsamps+1):(nsamps+length(missed)),cols] <- cms[missed, ]
-
-    if(!is.null(flist)){
-      sampleInfo<- subset(sampleInfo,flist)
-    }
-
-   # class(sampleInfo)<- c(class(sampleInfo), "sampledata")
-    rownames(sampleInfo)<- sampleInfo$MetagenNumber
-    return(sampleInfo)
-
+  if (!is.null(flist)) {
+    filter_expr <- substitute(flist)
+    sample_info <- subset(sample_info, eval(filter_expr, sample_info, parent.frame()))
   }
 
-
-
-#' A phylosql Function
-#'
-#'
-#' @param phylo logical
-#' @param database database to send data
-#' @param con connection
-#' @param whichSamples select specific samples to access
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import Matrix
-#' @import magrittr
-#' @export
-#'
-
-fetch_asv_table_sparse<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
-
-  if(is.null(con)){
-
-    con <-  try_fetch_connection()
-
-  }
-
-
-  if(any(class(con)=='logical')){
-
-    stop('No connection to database.')
-
-  }
-# fetch data
-asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
-
-if(!is.null(whichSamples)){
-  asv_long<- asv_long %>%
-    filter(!!asv_long$MetagenNumber %in% whichSamples )
+  rownames(sample_info) <- sample_info$MetagenNumber
+  sample_info
 }
 
-asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
-asv_long$SV<- as.factor(asv_long$SV)
-
-asv_table = Matrix::sparseMatrix(i = asv_long$MetagenNumber %>% as.integer,
-                                 j = asv_long$SV %>% as.integer,
-                                 x = asv_long$Abundance)
-rownames(asv_table) = levels(asv_long$MetagenNumber)
-colnames(asv_table) = levels(asv_long$SV)
-
-rm(asv_long)
-
-return(asv_table)
-
+#' Retrieve sparse ASV abundance matrix
+#'
+#' @param con Database connection or pool. Defaults to the cached connection.
+#' @param database Name of the ASV table to query.
+#' @param phylo Unused but retained for backwards compatibility.
+#' @param whichSamples Optional character vector of metagen numbers to restrict
+#'   the result.
+#'
+#' @return A sparse matrix (`dgCMatrix`) of ASV abundances.
+#' @export
+fetch_asv_table_sparse <- function(con = NULL, database = "eukaryota_sv", phylo = FALSE, whichSamples = NULL) { # nolint
+  build_asv_sparse(con, database, whichSamples)
 }
 
-
-
-#' A phylosql Function
+#' Retrieve ASV abundance matrix
 #'
+#' @inheritParams fetch_asv_table_sparse
 #'
-#' @param phylo logical
-#' @param database database to send data
-#' @param con connection
-#' @param whichSamples select specific samples to access
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import Matrix
-#' @import magrittr
+#' @return A sparse `dgCMatrix` abundance matrix.
 #' @export
-#'
-
-fetch_asv_table<- function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
-
-  if(is.null(con)){
-
-    con <-  try_fetch_connection()
-
-  }
-
-
-  if(any(class(con)=='logical')){
-
-    stop('No connection to database.')
-
-  }
-  # fetch data
-  asv_long<- dplyr::as_tibble(dplyr::tbl(con,database))
-
-  if(!is.null(whichSamples)){
-    asv_long<- asv_long %>%
-      filter(!!asv_long$MetagenNumber %in% whichSamples )
-  }
-
-  # Construct table
-  asvs<- unique(asv_long$SV)
-  samples<- unique(asv_long$MetagenNumber)
-  rows<- length(samples)
-  cols<- length(asvs)
-  asv_table<- matrix(0L,ncol=cols, nrow=rows)
-
-  sampleList<- split(asv_long,asv_long$MetagenNumber)
-
-  for(i in seq_along(sampleList)){
-    asv_table[i,match(sampleList[[i]]$SV, asvs)  ]<- sampleList[[i]]$Abundance
-  }
-
-  rownames(asv_table) <- names(sampleList)
-  colnames(asv_table)<- asvs
-
-  rm(asvlong)
-  rm(sampleList)
-
-
-  # Set class (or not)
- # if(phylo==FALSE){
-  asv_table<-  as(asv_table,"dgCMatrix")
-  gc()
-  #attr(asv_table, "type")<- "abundance"
- # }
-
-  return(asv_table)
-
+fetch_asv_table <- function(con = NULL, database = "eukaryota_sv", phylo = FALSE, whichSamples = NULL) { # nolint
+  build_asv_sparse(con, database, whichSamples)
 }
 
-#' A phylosql Function
+#' Retrieve taxonomy records
 #'
-#' @param phylo logical. Whether to format data for phyloseq or sparseHDD.
-#' @param database database to send data
-#' @param con connection
-#' @param whichTaxa select specific taxa
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
+#' @param con Database connection or pool. Defaults to cached connection.
+#' @param database Name of the taxonomy table to query.
+#' @param whichTaxa Optional character vector restricting the ASVs returned.
+#' @param phylo Logical; if `TRUE`, returns a matrix formatted for phyloseq.
+#'
+#' @return Either a tibble with taxonomy columns or a matrix if `phylo = TRUE`.
 #' @export
-#'
+fetch_taxonomy <- function(con = NULL, database = "eukaryota_tax", whichTaxa = NULL, phylo = FALSE) {
+  con_obj <- resolve_connection(con)
 
+  tax_tbl <- dplyr::tbl(con_obj, database) %>%
+    dplyr::select(-dplyr::any_of("type"))
 
-fetch_taxonomy<- function(con=NULL, database="eukaryota_tax",whichTaxa=NULL, phylo=FALSE){
-
-  if(is.null(con)){
-
-    con <-  try_fetch_connection()
-
+  if (!is.null(whichTaxa)) {
+    whichTaxa <- unique(as.character(whichTaxa))
+    tax_tbl <- dplyr::filter(tax_tbl, rlang::.data$SV %in% !!whichTaxa)
   }
 
+  tax <- dplyr::collect(tax_tbl)
 
-  if(any(class(con)=='logical')){
+  tax[] <- lapply(tax, function(col) {
+    if (is.character(col)) {
+      gsub("\r", "", col)
+    } else {
+      col
+    }
+  })
 
-    stop('No connection to database.')
-
+  if (!isTRUE(phylo)) {
+    attr(tax, "type") <- "taxonomy"
+    return(tibble::as_tibble(tax))
   }
 
-
-  tax<- dplyr::as_tibble(dplyr::tbl(con,database))
-  tax <- dplyr::mutate_if(tax,
-                    is.character,
-                    stringr::str_replace_all, pattern = "\\r", replacement = "")
-
-  if(!is.null(whichTaxa)){
-    tax<- tax %>%
-      dplyr::filter(!!tax$SV %in% whichTaxa )
-  }
-
-  if(phylo==FALSE){
-
-    attr(tax,"type")<- c( "taxonomy")
-
-  }else{
-    SV<- tax$SV
-    tax<- tax[,-1]
-    tax<- as.matrix(tax)
-    tax<- gsub("NA",NA,tax)
-
-    rownames(tax)<- SV
-  }
-  gc()
-   return(tax)
-
+  sv_ids <- tax$SV
+  tax_matrix <- tax %>%
+    dplyr::select(-"SV") %>%
+    as.matrix()
+  rownames(tax_matrix) <- sv_ids
+  tax_matrix
 }
 
-
-#' A phylosql Function
+#' Pivot CMS metadata to wide format
 #'
+#' @param cms_long A data frame or lazy tibble containing `MetagenNumber`,
+#'   `Factor`, and `Level` columns.
 #'
-#' @param cms_long data to upload
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
+#' @return A tibble with one row per `MetagenNumber` and CMS factors as columns.
 #' @export
-#'
+create_cms_table <- function(cms_long) {
+  data <- ensure_long_format(
+    cms_long,
+    id_col = "MetagenNumber",
+    key_col = "Factor",
+    value_col = "Level",
+    context = "CMS metadata"
+  )
 
-create_cms_table<- function(cms_long, ...){
-
-  vars<- unique(cms_long$Factor)
-  samples<- unique(cms_long$MetagenNumber)
-  rows<- length(samples)
-  cols<- length(vars)
-  sample_data<- matrix(NA,ncol=cols, nrow=rows)
-
-  sampleList<- split(cms_long,cms_long$MetagenNumber)
-
-  for(i in seq_along(sampleList)){
-    sample_data[i,match(sampleList[[i]]$Factor, vars)  ]<- sampleList[[i]]$Level
-  }
-
-  rownames(sample_data)<-  names(sampleList)
-  colnames(sample_data)<- vars
-  sample_data<- data.frame(sample_data)
-  sample_data$MetagenNumber<- samples
-
-  return(sample_data)
-
+  tidyr::pivot_wider(data, names_from = "Factor", values_from = "Level") %>%
+    dplyr::arrange(rlang::.data$MetagenNumber) %>%
+    tibble::as_tibble()
 }
 
-
-
-
-
-
-#' A phylosql Function
+#' Retrieve ASV records for specific samples
 #'
+#' @param samples Character vector of metagen numbers.
+#' @param database Table containing ASV abundances.
+#' @param con Database connection.
+#' @param col Column name identifying the sample identifier field.
 #'
-#' @param samples
-#' @param database
-#' @param con
-#' @param col
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
+#' @return A tibble with ASV abundance rows.
 #' @export
-#'
-fetch_asvs_by_sample<-
-  function(samples,database=NULL, con=NULL,col='MetagenNumber'){
-    if(is.null(con)){
-      stop("You need to specify a database connection")
-    }
-    samples = unique(samples)
-
-    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
-    # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    df <- dbGetQuery(con, query)
-    #dbDisconnect(con)
-    message("Complete.")
-    df
-
+fetch_asvs_by_sample <- function(samples, database = NULL, con = NULL, col = "MetagenNumber") {
+  if (is.null(database) || !nzchar(database)) {
+    stop("`database` must be provided when fetching ASVs by sample.", call. = FALSE)
   }
 
-#' A phylosql Function
-#'
-#'
-#' @param phylo logical
-#' @param database database to send data
-#' @param con connection
-#' @param whichSamples select specific samples to access
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import Matrix
-#' @import magrittr
-#' @export
-#'
-fetch_asv_table_sparse_by_sample<-
+  con_obj <- resolve_connection(con)
+  samples <- unique(as.character(samples))
 
-  function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
+  column <- rlang::sym(col)
 
-
-    if(is.null(database)){
-      stop("You need to specify a database connection and a database")
-    }
-
-    if(is.null(con)){
-
-      con <-  try_fetch_connection_string()
-
-    }
-
-
-    if(any(class(con)=='logical')){
-
-      stop('No connection to database.')
-
-    }
-
-
-  if(is.null(whichSamples)){
-    stop("You need to specify samples.")
-  }
-  asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval_con(con),database=database)
-
-  gc()
-  asv_long$MetagenNumber<- as.factor(asv_long$MetagenNumber)
-  asv_long$SV<- as.factor(asv_long$SV)
-
-  asv_table = Matrix::sparseMatrix(i = asv_long$MetagenNumber %>% as.integer,
-                              j = asv_long$SV %>% as.integer,
-                              x = asv_long$Abundance)
-  rownames(asv_table) = levels(asv_long$MetagenNumber)
-  colnames(asv_table) = levels(asv_long$SV)
-
-  rm(asv_long)
-
-  gc()
-
-  return(asv_table)
-
+  dplyr::tbl(con_obj, database) %>%
+    dplyr::filter(!!column %in% !!samples) %>%
+    dplyr::collect()
 }
 
-#' A phylosql Function
+#' Retrieve sparse ASV matrix for specified samples
 #'
+#' @inheritParams fetch_asv_table_sparse
 #'
-#' @param taxa
-#' @param database
-#' @param con
-#' @param col
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
+#' @return A sparse `dgCMatrix` abundance matrix limited to the requested samples.
 #' @export
-#'
-fetch_taxonomy_by_asv<-
-  function(taxa,database=NULL, con=NULL,col='SV'){
-    if(is.null(con)){
-
-      con <-  try_fetch_connection()
-
-    }
-
-    if(any(class(con)=='logical')){
-
-      stop('No connection to database.')
-
-    }
-
-    taxa<- unique(taxa)
-
-    query  <-  sprintf("SELECT * FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(taxa),collapse=', '))
-    # SUBMIT THE UPDATE QUERY AND DISCONNECT
-    res <- dbGetQuery(con, query)
-    #dbDisconnect(con)
-    message("Complete.")
-    tax <- dplyr::mutate_if(df,
-                            is.character,
-                            stringr::str_replace_all, pattern = "\\r", replacement = "")
-
-
-    if(phylo==FALSE){
-
-      attr(tax,"type")<- c( "taxonomy")
-
-    }else{
-      SV<- tax$SV
-      tax<- tax[,-1]
-      tax<- as.matrix(tax)
-      tax<- gsub("NA",NA,tax)
-
-      rownames(tax)<- SV
-    }
-    gc()
-    return(tax)
-
+fetch_asv_table_sparse_by_sample <- function(con = NULL, database = "eukaryota_sv", phylo = FALSE, whichSamples = NULL) { # nolint
+  if (is.null(whichSamples)) {
+    stop("`whichSamples` must be supplied when requesting a sample-specific ASV table.", call. = FALSE)
   }
 
-
-#' A phylosql Function
-#'
-#'
-#' @param database
-#' @param con
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @export
-#'
-get_svs<-
-  function(database=NULL, con=NULL){
-
-    if(is.null(con)){
-
-      con <-  try_fetch_connection()
-
-    }
-
-    if(any(class(con)=='logical')){
-
-      stop('No connection to database.')
-
-    }
-
-    query  <-  sprintf("SELECT `SV` FROM %s",  database)
-    df<- dbGetQuery(con, query)
-    unique(df$SV)
-
+  build_asv_sparse(con, database, unique(as.character(whichSamples)))
 }
 
-
-#' A phylosql Function to add quotes within an SQL query
+#' Retrieve taxonomy for specific ASVs
 #'
+#' @param taxa Character vector of ASV identifiers.
+#' @inheritParams fetch_taxonomy
 #'
-#' @param x
-#' @keywords
+#' @return A tibble of taxonomy records.
 #' @export
-#'
-add_quotes<- function(x){
-
-  x <- unique(x)
-  vec<- vector('list',length=length(x))
-  for(i in seq_along(x)){
-    x0<-  paste0("'",x[i],"'")
-    vec[[i]]<- x0
+fetch_taxonomy_by_asv <- function(taxa, database = NULL, con = NULL, col = "SV") {
+  if (is.null(database) || !nzchar(database)) {
+    stop("`database` must be provided when fetching taxonomy by ASV.", call. = FALSE)
   }
-  unlist(vec)
 
+  con_obj <- resolve_connection(con)
+  taxa <- unique(as.character(taxa))
+
+  column <- rlang::sym(col)
+
+  dplyr::tbl(con_obj, database) %>%
+    dplyr::filter(!!column %in% !!taxa) %>%
+    dplyr::collect() %>%
+    dplyr::mutate(dplyr::across(where(is.character), ~ gsub("\r", "", .x))) %>%
+    tibble::as_tibble()
 }
 
-
-#' A phylosql Function to construct an asv table
+#' Retrieve distinct ASV identifiers from a table
 #'
+#' @inheritParams fetch_asv_table_sparse
 #'
-#' @param asv_long
-#' @keywords
+#' @return A character vector of distinct ASV identifiers.
 #' @export
-#'
-construct_asv_table<- function(asv_long){
-
-  asvs <- unique(asv_long$SV)
-  samples <- unique(asv_long$MetagenNumber)
-  rows <- length(samples)
-  cols <- length(asvs)
-  asv_table <- matrix(0L, ncol = cols, nrow = rows)
-  sampleList <- split(asv_long, asv_long$MetagenNumber)
-  for (i in seq_along(sampleList)) {
-    asv_table[i, match(sampleList[[i]]$SV, asvs)] <- sampleList[[i]]$Abundance
+get_svs <- function(database = NULL, con = NULL) {
+  if (is.null(database) || !nzchar(database)) {
+    stop("`database` must be provided when retrieving ASV identifiers.", call. = FALSE)
   }
-  rownames(asv_table) <- names(sampleList)
-  colnames(asv_table) <- asvs
-  rm(asv_long)
-  rm(sampleList)
-  asv_table <- as(asv_table, "dgCMatrix")
-  gc()
-  return(asv_table)
 
+  con_obj <- resolve_connection(con)
+
+  dplyr::tbl(con_obj, database) %>%
+    dplyr::distinct(rlang::.data$SV) %>%
+    dplyr::arrange(rlang::.data$SV) %>%
+    dplyr::pull("SV")
 }
 
-#' A phylosql Function
+#' Add single quotes to character values
 #'
+#' @param x Character vector of values to quote.
 #'
-#' @param phylo logical
-#' @param database database to send data
-#' @param con connection
-#' @param whichSamples select specific samples to access
-#' @keywords
-#' @import dplyr
-#' @import RMariaDB
-#' @import Matrix
-#' @import magrittr
+#' @return A character vector wrapped in single quotes.
 #' @export
+add_quotes <- function(x) {
+  sprintf("'%s'", unique(x))
+}
+
+#' Construct a sparse ASV matrix from long-format data
 #'
-fetch_asv_table_by_sample<-
+#' @param asv_long Data frame containing `MetagenNumber`, `SV`, and `Abundance` columns.
+#'
+#' @return A sparse `dgCMatrix` matrix.
+#' @export
+construct_asv_table <- function(asv_long) {
+  data <- ensure_dataframe(
+    asv_long,
+    required = c("MetagenNumber", "SV", "Abundance"),
+    context = "ASV abundance"
+  )
 
-  function(con=NULL,database="eukaryota_sv",phylo=FALSE, whichSamples=NULL ){
-
-
-    if(is.null(database)){
-      stop("You need to specify a database connection and a database")
-    }
-
-    if(is.null(con)){
-
-      con <-  try_fetch_connection_string()
-
-    }
-
-
-    if(any(class(con)=='logical')){
-
-      stop('No connection to database.')
-
-    }
-
-    # fetch data
-
-    if(is.null(whichSamples)){
-      stop("You need to specify samples.")
-    }
-    asv_long<- fetch_asvs_by_sample(samples=whichSamples,con=eval_con(con),database=database)
-
-
-    asv_table <- construct_asv_table(asv_long)
-
-    gc()
-
-    return(asv_table)
-
+  if (!nrow(data)) {
+    return(Matrix::sparseMatrix(i = integer(), j = integer(), dims = c(0, 0)))
   }
 
+  samples <- unique(data$MetagenNumber)
+  taxa <- unique(data$SV)
+
+  i <- match(data$MetagenNumber, samples)
+  j <- match(data$SV, taxa)
+
+  Matrix::sparseMatrix(
+    i = i,
+    j = j,
+    x = data$Abundance,
+    dims = c(length(samples), length(taxa)),
+    dimnames = list(samples, taxa)
+  )
+}
+
+build_asv_sparse <- function(con, database, samples = NULL) {
+  if (is.null(database) || !nzchar(database)) {
+    stop("`database` must be provided when fetching ASV data.", call. = FALSE)
+  }
+
+  con_obj <- resolve_connection(con)
+
+  asv_tbl <- dplyr::tbl(con_obj, database) %>%
+    dplyr::select("MetagenNumber", "SV", "Abundance")
+
+  if (!is.null(samples)) {
+    samples <- unique(as.character(samples))
+    asv_tbl <- dplyr::filter(asv_tbl, rlang::.data$MetagenNumber %in% !!samples)
+  }
+
+  asv_long <- dplyr::collect(asv_tbl)
+  construct_asv_table(asv_long)
+}
+
+ensure_dataframe <- function(data, required, context) {
+  if (inherits(data, "tbl_lazy")) {
+    data <- dplyr::collect(data)
+  }
+
+  if (!is.data.frame(data)) {
+    data <- as.data.frame(data, stringsAsFactors = FALSE)
+  }
+
+  missing <- setdiff(required, names(data))
+  if (length(missing)) {
+    stop(
+      sprintf(
+        "Missing required column(s) for %s: %s",
+        context,
+        paste(missing, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  data
+}
+
+ensure_long_format <- function(data, id_col, key_col, value_col, context) {
+  data <- ensure_dataframe(
+    data,
+    required = c(id_col, key_col, value_col),
+    context = context
+  )
+
+  data[[id_col]] <- as.character(data[[id_col]])
+  data[[key_col]] <- as.character(data[[key_col]])
+  data
+}
