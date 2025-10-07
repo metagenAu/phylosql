@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_bulk_tax}
 \alias{upload_bulk_tax}
-\title{A phylosql Function}
+\title{Bulk upload taxonomy data using \code{LOAD DATA}}
 \usage{
 upload_bulk_tax(data, database = NULL, con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing taxonomy records.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload a taxonomy table to mysql database (quickly)
+Cleans character data and uses MySQL's \code{LOAD DATA} command to append only new taxonomy rows to the destination table.
 }

@@ -2,10 +2,20 @@
 % Please edit documentation in R/connections.R
 \name{set_pool}
 \alias{set_pool}
-\title{A phylosql Function}
+\title{Establish a pooled connection to the MTGN database}
 \usage{
-set_pool(path, key)
+set_pool(path, key, size = NULL)
+}
+\arguments{
+\item{path}{Path to a CSV containing connection credentials with columns \code{host}, \code{dbname}, \code{port}, and \code{user}.}
+
+\item{key}{Secret corresponding to the credentials in \code{path} (e.g. password).}
+
+\item{size}{Optional list of pool sizing parameters forwarded to \code{pool::dbPool()}.}
+}
+\value{
+A \code{pool::Pool} instance representing the shared connection.
 }
 \description{
-A phylosql Function
+Creates or refreshes a connection pool for the MTGN database, closing any previously cached pool before establishing a new one.
 }
