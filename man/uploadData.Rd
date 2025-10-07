@@ -2,17 +2,22 @@
 % Please edit documentation in R/upload.R
 \name{uploadData}
 \alias{uploadData}
-\title{A phylosql Function}
+\title{Bulk upload arbitrary data using \code{LOAD DATA}}
 \usage{
-uploadData(data, tableName, con = NULL)
+uploadData(data, tableName, con = NULL, use_transaction = FALSE)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame of rows to upload.}
 
-\item{tableName}{database to send data}
+\item{tableName}{The fully qualified destination table name.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+
+\item{use_transaction}{Logical flag indicating whether to wrap the upload in a transaction.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-A backend function for bulk uploading data to a mysql database
+Writes the provided data to a temporary CSV file and executes MySQL's \code{LOAD DATA LOCAL INFILE} command to efficiently append the records, optionally within a transaction.
 }

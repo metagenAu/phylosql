@@ -2,10 +2,13 @@
 % Please edit documentation in R/connections.R
 \name{try_fetch_connection}
 \alias{try_fetch_connection}
-\title{A phylosql Function}
+\title{Attempt to reuse a cached connection or pool}
 \usage{
 try_fetch_connection()
 }
+\value{
+A live database connection object (either \code{DBIConnection} or \code{pool::Pool}) or \code{NULL} if none are cached.
+}
 \description{
-A phylosql Function
+Retrieves an existing cached database connection or pool when available, allowing callers to reuse previously established resources without reconnecting.
 }

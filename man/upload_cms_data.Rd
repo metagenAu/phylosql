@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_cms_data}
 \alias{upload_cms_data}
-\title{A phylosql Function}
+\title{Upload CMS data to a MySQL database}
 \usage{
 upload_cms_data(data, database = "cmsdata", con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing CMS records.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload cms data to mysql database
+Appends new CMS rows to the destination table, skipping entries that already exist.
 }

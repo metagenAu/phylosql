@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_cms_data_Long}
 \alias{upload_cms_data_Long}
-\title{A phylosql Function}
+\title{Upload CMS long-format data to a MySQL database}
 \usage{
 upload_cms_data_Long(data, database = "cmsdatalong", con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing long-format CMS records with columns \code{MetagenNumber}, \code{Factor}, and \code{Level}.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload cms data to mysql database
+Validates CMS long-format records (ensuring no missing \code{Level} values) and appends new rows while skipping duplicates.
 }
