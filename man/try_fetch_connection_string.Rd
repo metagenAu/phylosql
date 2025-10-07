@@ -2,10 +2,13 @@
 % Please edit documentation in R/connections.R
 \name{try_fetch_connection_string}
 \alias{try_fetch_connection_string}
-\title{A phylosql Function}
+\title{Return the expression used to lazily fetch a connection}
 \usage{
 try_fetch_connection_string()
 }
+\value{
+A character string representing a call to \code{get_mtgn_connection()}.
+}
 \description{
-A phylosql Function
+Provides the textual expression needed to lazily obtain a connection, useful when storing deferred actions that should open a connection on demand.
 }

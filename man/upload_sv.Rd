@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_sv}
 \alias{upload_sv}
-\title{A phylosql Function}
+\title{Upload sequence variant data to a MySQL database}
 \usage{
 upload_sv(data, database = NULL, con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing sequence variant records.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload sv table to mysql database
+Validates sequence variant records and appends new rows, skipping entries that already exist in the destination table.
 }

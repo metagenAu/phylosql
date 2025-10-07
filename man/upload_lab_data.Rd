@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_lab_data}
 \alias{upload_lab_data}
-\title{A phylosql Function}
+\title{Upload laboratory data to a MySQL database}
 \usage{
 upload_lab_data(data, database = "labdata", con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing laboratory records.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload lab data to mysql database
+Validates laboratory records and appends new rows to the specified laboratory table, skipping rows that already exist.
 }
