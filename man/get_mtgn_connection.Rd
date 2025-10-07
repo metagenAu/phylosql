@@ -2,10 +2,20 @@
 % Please edit documentation in R/connections.R
 \name{get_mtgn_connection}
 \alias{get_mtgn_connection}
-\title{A phylosql Function}
+\title{Establish and cache a connection to the MTGN database}
 \usage{
-get_mtgn_connection(path = NULL, key = NULL)
+get_mtgn_connection(path = NULL, key = NULL, refresh = FALSE)
+}
+\arguments{
+\item{path}{Path to a CSV containing connection credentials with columns \code{host}, \code{dbname}, \code{port}, and \code{user}.}
+
+\item{key}{Secret corresponding to the credentials in \code{path} (e.g. password).}
+
+\item{refresh}{Logical flag indicating whether to force reconnection even if a cached connection exists.}
+}
+\value{
+A live \code{DBIConnection} object.
 }
 \description{
-A phylosql Function
+Establishes a MariaDB connection using credentials from disk, caching the active connection and credentials for reuse across package calls.
 }

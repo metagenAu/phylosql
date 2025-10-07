@@ -2,17 +2,20 @@
 % Please edit documentation in R/upload.R
 \name{upload_taxonomy}
 \alias{upload_taxonomy}
-\title{A phylosql Function}
+\title{Upload taxonomy data to a MySQL database}
 \usage{
 upload_taxonomy(data, database = NULL, con = NULL)
 }
 \arguments{
-\item{data}{data to upload}
+\item{data}{A data frame containing taxonomy records.}
 
-\item{database}{database to send data}
+\item{database}{The name of the destination table.}
 
-\item{con}{connection}
+\item{con}{An existing database connection. If \code{NULL}, a cached connection will be used.}
+}
+\value{
+Invisibly returns the rows uploaded.
 }
 \description{
-function to upload taxonomy table to mysql database
+Cleans character data of carriage returns, validates inputs, and appends new taxonomy rows while skipping existing entries.
 }

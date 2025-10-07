@@ -2,10 +2,16 @@
 % Please edit documentation in R/connections.R
 \name{eval_con}
 \alias{eval_con}
-\title{A phylosql Function}
+\title{Evaluate a connection expression in the caller environment}
 \usage{
-eval_con(x)
+eval_con(expr)
+}
+\arguments{
+\item{expr}{Character string of R code that resolves to a connection when evaluated.}
+}
+\value{
+The evaluated object, typically a database connection.
 }
 \description{
-A phylosql Function
+Parses and evaluates a stored connection expression within the caller's environment.
 }

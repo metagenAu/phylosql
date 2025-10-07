@@ -2,10 +2,20 @@
 % Please edit documentation in R/glom_queries.R
 \name{sql_phyloseq_by_sample}
 \alias{sql_phyloseq_by_sample}
-\title{A phylosql Function.}
+\title{Build a phyloseq object for selected samples}
 \usage{
 sql_phyloseq_by_sample(taxa_group, samples, con = NULL)
 }
+\arguments{
+\item{taxa_group}{Character prefix used to identify the source tables. The function expects \code{<taxa_group>_sv} and \code{<taxa_group>_tax} tables to exist in the connected schema.}
+
+\item{samples}{Optional character vector of sample identifiers to retain. When omitted, all samples in the SV table are returned.}
+
+\item{con}{Optional database connection, pool, or connection expression.}
+}
+\value{
+A \code{phyloseq} object restricted to the requested samples.
+}
 \description{
-A phylosql Function.
+Fetch sequence variant abundances together with taxonomy and sample metadata and return a sparse \code{phyloseq} object for the requested samples.
 }
