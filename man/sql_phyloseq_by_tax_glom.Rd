@@ -2,10 +2,20 @@
 % Please edit documentation in R/glom_queries.R
 \name{sql_phyloseq_by_tax_glom}
 \alias{sql_phyloseq_by_tax_glom}
-\title{A phylosql Function}
+\title{Build a phyloseq object aggregated at a taxonomy rank}
 \usage{
 sql_phyloseq_by_tax_glom(taxalevel, taxa_group, con = NULL)
 }
+\arguments{
+\item{taxalevel}{Character name of the taxonomy column that defines the aggregation level (for example, \code{"Family"}).}
+
+\item{taxa_group}{Character prefix used to identify the source tables. The function expects \code{<taxa_group>_sv} and \code{<taxa_group>_tax} tables to exist in the connected schema.}
+
+\item{con}{Optional database connection, pool, or connection expression. When omitted the function reuses the most recently established connection.}
+}
+\value{
+A \code{phyloseq} object built from aggregated counts and taxonomy metadata.
+}
 \description{
-A phylosql Function
+Aggregate sequence variant counts at a higher taxonomy rank and return a sparse \code{phyloseq} object composed of the corresponding counts, taxonomy, and sample metadata.
 }

@@ -2,10 +2,22 @@
 % Please edit documentation in R/glom_queries.R
 \name{sql_phyloseq_by_sample_and_tax_glom}
 \alias{sql_phyloseq_by_sample_and_tax_glom}
-\title{A phylosql Function. this function is unfinished. Do not use.}
+\title{Build a phyloseq object for selected samples aggregated at a taxonomy rank}
 \usage{
 sql_phyloseq_by_sample_and_tax_glom(taxa_group, taxalevel, samples, con = NULL)
 }
+\arguments{
+\item{taxa_group}{Character prefix used to identify the source tables. The function expects \code{<taxa_group>_sv} and \code{<taxa_group>_tax} tables to exist in the connected schema.}
+
+\item{taxalevel}{Character name of the taxonomy column that defines the aggregation level (for example, \code{"Genus"}).}
+
+\item{samples}{Character vector of sample identifiers to retain before aggregating counts.}
+
+\item{con}{Optional database connection, pool, or connection expression.}
+}
+\value{
+A \code{phyloseq} object restricted to the supplied samples and aggregated at the requested taxonomy level.
+}
 \description{
-A phylosql Function. this function is unfinished. Do not use.
+Filter the SV table to the requested samples, aggregate abundances at the requested taxonomy rank, and return a sparse \code{phyloseq} object containing the matching counts, taxonomy, and sample metadata.
 }
