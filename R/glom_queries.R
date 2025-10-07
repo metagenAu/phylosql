@@ -123,7 +123,8 @@ sql_phyloseq_by_tax_glom<-
 
     rownames(asv_table) = levels(asv_long$MetagenNumber)
     colnames(asv_table) = levels(asv_long$SV)
-
+    print(dim(asv_table))
+    print('asv table made')
     rm(asv_long)
     gc()
 

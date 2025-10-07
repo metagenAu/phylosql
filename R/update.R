@@ -308,7 +308,7 @@ delete_data_by_sample_custom<-
 
     # si<- dplyr::as_tibble(
     #   dplyr::tbl(con,database))
-    samples = unique(samples)
+    #samples = unique(samples)
 
 
     query  <-  sprintf("DELETE FROM %s WHERE %s IN (%s)",  database,col, paste0(add_quotes(samples),collapse=', '))
@@ -345,7 +345,7 @@ delete_labdata_by_sample_and_var<-
 
     }
 
-    samples = unique(samples)
+    #samples = unique(samples)
 
     queries =
       sprintf("DELETE FROM %s WHERE MetagenNumber = `%s` AND variable = `%s` ",
