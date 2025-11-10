@@ -96,6 +96,16 @@ fetch_asv_table <- function(con = NULL, database = "eukaryota_sv", phylo = FALSE
   build_asv_sparse(con, database, whichSamples)
 }
 
+#' Retrieve ASV matrix for specific samples
+#'
+#' @inheritParams fetch_asv_table_sparse
+#'
+#' @return A sparse `dgCMatrix` abundance matrix limited to the requested samples.
+#' @export
+fetch_asv_table_by_sample <- function(con = NULL, database = "eukaryota_sv", phylo = FALSE, whichSamples = NULL) { # nolint
+  fetch_asv_table_sparse_by_sample(con = con, database = database, phylo = phylo, whichSamples = whichSamples)
+}
+
 #' Retrieve taxonomy records
 #'
 #' @param con Database connection or pool. Defaults to cached connection.
