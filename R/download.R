@@ -6,17 +6,13 @@
 #' @return A data frame with one row per `MetagenNumber`.
 #' @export
 create_sampleInfo_table <- function(si_long) {
-  data <- ensure_long_format(
+  widen_long_table(
     si_long,
     id_col = "MetagenNumber",
     key_col = "variable",
     value_col = "value",
     context = "sample information"
   )
-
-  tidyr::pivot_wider(data, names_from = "variable", values_from = "value") %>%
-    dplyr::arrange(rlang::.data$MetagenNumber) %>%
-    tibble::as_tibble()
 }
 
 #' Retrieve and merge sample and CMS metadata
@@ -157,17 +153,13 @@ fetch_taxonomy <- function(con = NULL, database = "eukaryota_tax", whichTaxa = N
 #' @return A tibble with one row per `MetagenNumber` and CMS factors as columns.
 #' @export
 create_cms_table <- function(cms_long) {
-  data <- ensure_long_format(
+  widen_long_table(
     cms_long,
     id_col = "MetagenNumber",
     key_col = "Factor",
     value_col = "Level",
     context = "CMS metadata"
   )
-
-  tidyr::pivot_wider(data, names_from = "Factor", values_from = "Level") %>%
-    dplyr::arrange(rlang::.data$MetagenNumber) %>%
-    tibble::as_tibble()
 }
 
 #' Retrieve ASV records for specific samples
@@ -346,4 +338,51 @@ ensure_long_format <- function(data, id_col, key_col, value_col, context) {
   data[[id_col]] <- as.character(data[[id_col]])
   data[[key_col]] <- as.character(data[[key_col]])
   data
+}
+
+widen_long_table <- function(data, id_col, key_col, value_col, context) {
+  formatted <- ensure_long_format(
+    data,
+    id_col = id_col,
+    key_col = key_col,
+    value_col = value_col,
+    context = context
+  )
+
+  id_sym <- rlang::sym(id_col)
+
+  formatted <- formatted[!is.na(formatted[[key_col]]), , drop = FALSE]
+
+  conflict_rows <- formatted[[key_col]] == id_col
+  if (any(conflict_rows, na.rm = TRUE)) {
+    formatted[[key_col]][conflict_rows] <- paste0("value_", formatted[[key_col]][conflict_rows])
+  }
+
+  order_index <- order(
+    formatted[[id_col]],
+    formatted[[key_col]],
+    is.na(formatted[[value_col]]),
+    seq_len(nrow(formatted))
+  )
+  formatted <- formatted[order_index, , drop = FALSE]
+
+  if (nrow(formatted)) {
+    duplicate_pairs <- duplicated(formatted[c(id_col, key_col)])
+    if (any(duplicate_pairs)) {
+      formatted <- formatted[!duplicate_pairs, , drop = FALSE]
+    }
+  }
+
+  tidyr::pivot_wider(
+    formatted,
+    names_from = dplyr::all_of(key_col),
+    values_from = dplyr::all_of(value_col),
+    names_repair = make_unique_names
+  ) %>%
+    dplyr::arrange(!!id_sym) %>%
+    tibble::as_tibble()
+}
+
+make_unique_names <- function(x) {
+  make.unique(x, sep = "_")
 }
