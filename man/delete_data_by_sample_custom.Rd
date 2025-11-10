@@ -2,17 +2,22 @@
 % Please edit documentation in R/update.R
 \name{delete_data_by_sample_custom}
 \alias{delete_data_by_sample_custom}
-\title{A phylosql Function}
+\title{Delete rows using a custom column}
 \usage{
 delete_data_by_sample_custom(samples, database = NULL, con = NULL, col = NULL)
 }
 \arguments{
-\item{database}{database to send data}
+\item{samples}{Character vector of values to match.}
 
-\item{con}{connection}
+\item{database}{Name of the table to modify.}
 
-\item{data}{data to upload}
+\item{con}{Database connection or pool. When \code{NULL}, the cached connection is reused.}
+
+\item{col}{Column name used to identify matching records.}
+}
+\value{
+Invisibly returns the number of affected rows.
 }
 \description{
-function to delete to mysql database
+Removes records from the specified table where the provided column matches any of the supplied values.
 }
