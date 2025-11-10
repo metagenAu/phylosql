@@ -216,6 +216,28 @@ collect_sv_tax <- function(con, taxa_group, samples = NULL) {
   sv_tbl <- dplyr::tbl(con, sv_table)
   tax_tbl <- dplyr::tbl(con, tax_table)
 
+  required_sv_cols <- c("MetagenNumber", "SV", "Abundance")
+  sv_cols <- colnames(sv_tbl)
+  missing_sv_cols <- setdiff(required_sv_cols, sv_cols)
+  if (length(missing_sv_cols)) {
+    stop(
+      sprintf(
+        "Required column(s) %s missing from %s.",
+        paste(shQuote(missing_sv_cols), collapse = ", "),
+        sv_table
+      ),
+      call. = FALSE
+    )
+  }
+
+  sv_tbl <- dplyr::select(sv_tbl, dplyr::all_of(required_sv_cols))
+
+  tax_cols <- colnames(tax_tbl)
+  overlapping_cols <- intersect(setdiff(tax_cols, "SV"), setdiff(required_sv_cols, "SV"))
+  if (length(overlapping_cols)) {
+    tax_tbl <- dplyr::select(tax_tbl, -dplyr::all_of(overlapping_cols))
+  }
+
   joined <- dplyr::inner_join(sv_tbl, tax_tbl, by = "SV")
 
   if (!is.null(samples)) {
