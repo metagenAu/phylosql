@@ -58,6 +58,11 @@ fetch_sampleInfo <- function(flist = NULL, con = NULL, cms_format = c("long", "w
   )
 
   sample_info <- dplyr::full_join(sample_info, cms_info, by = "MetagenNumber")
+  sample_info <- ensure_dataframe(
+    sample_info,
+    required = "MetagenNumber",
+    context = "sample metadata"
+  )
 
   if (!is.null(flist)) {
     filter_expr <- substitute(flist)
@@ -150,7 +155,7 @@ fetch_taxonomy <- function(con = NULL, database = "eukaryota_tax", whichTaxa = N
 #' @param cms_long A data frame or lazy tibble containing `MetagenNumber`,
 #'   `Factor`, and `Level` columns.
 #'
-#' @return A tibble with one row per `MetagenNumber` and CMS factors as columns.
+#' @return A data frame with one row per `MetagenNumber` and CMS factors as columns.
 #' @export
 create_cms_table <- function(cms_long) {
   widen_long_table(
@@ -373,14 +378,15 @@ widen_long_table <- function(data, id_col, key_col, value_col, context) {
     }
   }
 
-  tidyr::pivot_wider(
+  result <- tidyr::pivot_wider(
     formatted,
     names_from = dplyr::all_of(key_col),
     values_from = dplyr::all_of(value_col),
     names_repair = make_unique_names
   ) %>%
-    dplyr::arrange(!!id_sym) %>%
-    tibble::as_tibble()
+    dplyr::arrange(!!id_sym)
+
+  as.data.frame(result, stringsAsFactors = FALSE)
 }
 
 make_unique_names <- function(x) {
