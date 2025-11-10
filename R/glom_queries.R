@@ -193,7 +193,7 @@ resolve_connection <- function(con) {
   }
 
   if (inherits(con, "Pool")) {
-    if (pool::poolClosed(con)) {
+    if (pool_is_closed(con)) {
       stop("The supplied connection pool has been closed.", call. = FALSE)
     }
     return(con)
