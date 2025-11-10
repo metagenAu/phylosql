@@ -318,7 +318,7 @@ uploadData <- function(data, tableName, con = NULL, use_transaction = FALSE) {
     "INTO TABLE",
     DBI::dbQuoteIdentifier(con, tableName),
     "FIELDS TERMINATED BY ','",
-    "ENCLOSED BY '"'",
+    paste("ENCLOSED BY", DBI::dbQuoteString(con, "\"")),
     "LINES TERMINATED BY '\\n'",
     "IGNORE 1 LINES"
   )

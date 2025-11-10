@@ -2,17 +2,20 @@
 % Please edit documentation in R/update.R
 \name{delete_data_by_sample}
 \alias{delete_data_by_sample}
-\title{A phylosql Function}
+\title{Delete rows for specific samples}
 \usage{
 delete_data_by_sample(samples, database = NULL, con = NULL)
 }
 \arguments{
-\item{database}{database to send data}
+\item{samples}{Character vector of sample identifiers to delete.}
 
-\item{con}{connection}
+\item{database}{Name of the table to modify.}
 
-\item{data}{data to upload}
+\item{con}{Database connection or pool. When \code{NULL}, the cached connection is reused.}
+}
+\value{
+Invisibly returns the number of affected rows.
 }
 \description{
-function to delete to mysql database
+Removes records matching the supplied sample identifiers from a target table. The \code{MetagenNumber} column is used to identify matching rows.
 }

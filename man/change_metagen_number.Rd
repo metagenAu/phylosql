@@ -2,7 +2,7 @@
 % Please edit documentation in R/update.R
 \name{change_metagen_number}
 \alias{change_metagen_number}
-\title{A phylosql Function}
+\title{Update metagen numbers across related tables}
 \usage{
 change_metagen_number(
   old_names,
@@ -12,14 +12,17 @@ change_metagen_number(
 )
 }
 \arguments{
-\item{old_names}{data to upload}
+\item{old_names}{Character vector of existing \code{MetagenNumber} values.}
 
-\item{new_names}{data to upload}
+\item{new_names}{Character vector of replacement identifiers. Must be the same length as \code{old_names}.}
 
-\item{con}{connection}
+\item{con}{Database connection or pool. When \code{NULL}, the cached connection is reused.}
 
-\item{database}{database to send data}
+\item{databases}{Character vector of table names to update.}
+}
+\value{
+Invisibly returns \code{NULL}.
 }
 \description{
-function to update lab data
+Iterates through one or more tables, replacing occurrences of \code{MetagenNumber} values with new identifiers. Each table is updated in turn and any execution errors are caught and reported via \code{try()}.
 }
