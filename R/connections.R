@@ -1,4 +1,4 @@
-​.phylosql_state <- new.env(parent = emptyenv())
+.phylosql_state <- new.env(parent = emptyenv())
 
 pool_is_closed <- function(pool) {
   if (is.null(pool)) {
