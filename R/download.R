@@ -124,7 +124,7 @@ fetch_taxonomy <- function(con = NULL, database = "eukaryota_tax", whichTaxa = N
 
   if (!is.null(whichTaxa)) {
     whichTaxa <- unique(as.character(whichTaxa))
-    tax_tbl <- dplyr::filter(tax_tbl, rlang::.data$SV %in% !!whichTaxa)
+    tax_tbl <- dplyr::filter(tax_tbl, .data$SV %in% !!whichTaxa)
   }
 
   tax <- dplyr::collect(tax_tbl)
@@ -243,8 +243,8 @@ get_svs <- function(database = NULL, con = NULL) {
   con_obj <- resolve_connection(con)
 
   dplyr::tbl(con_obj, database) %>%
-    dplyr::distinct(rlang::.data$SV) %>%
-    dplyr::arrange(rlang::.data$SV) %>%
+    dplyr::distinct(.data$SV) %>%
+    dplyr::arrange(.data$SV) %>%
     dplyr::pull("SV")
 }
 
@@ -302,7 +302,7 @@ build_asv_sparse <- function(con, database, samples = NULL) {
 
   if (!is.null(samples)) {
     samples <- unique(as.character(samples))
-    asv_tbl <- dplyr::filter(asv_tbl, rlang::.data$MetagenNumber %in% !!samples)
+    asv_tbl <- dplyr::filter(asv_tbl, .data$MetagenNumber %in% !!samples)
   }
 
   asv_long <- dplyr::collect(asv_tbl)
