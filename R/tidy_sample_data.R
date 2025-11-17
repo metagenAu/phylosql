@@ -18,7 +18,7 @@ ms_as_cmsData <- function(data) {
   tibble::as_tibble(cms) %>%
     dplyr::mutate(
       SurveyID = NA_character_,
-      TargetCropTypeName = dplyr::coalesce(rlang::.data$TargetCropTypeName, NA_character_)
+      TargetCropTypeName = dplyr::coalesce(.data$TargetCropTypeName, NA_character_)
     ) %>%
     dplyr::select(
       "MetagenNumber", "PropertyName", "SurveyID", "BlockName",
@@ -47,7 +47,7 @@ cms_as_cmsData <- function(data) {
       SurveyID = "SurveyId",
       MetagenNumber = "BarcodeId"
     ) %>%
-    dplyr::mutate(SurveyID = as.character(rlang::.data$SurveyID)) %>%
+    dplyr::mutate(SurveyID = as.character(.data$SurveyID)) %>%
     dplyr::select(
       "MetagenNumber", "PropertyName", "SurveyID", "BlockName",
       "CropName", "SurveyDate", "Location", "AgronomistName",
@@ -75,12 +75,12 @@ as_labData <- function(labdata) {
 
   cleaned <- renamed %>%
     dplyr::mutate(
-      SoilMoisture = suppressWarnings(as.numeric(rlang::.data$SoilMoisture)),
+      SoilMoisture = suppressWarnings(as.numeric(.data$SoilMoisture)),
       dplyr::across(
         c("ActiveCarbon", "pH", "Phosphatase", "B_Glucosidase", "DNAConc", "SoilMoisture"),
         ~ replace(.x, .x == 0, NA_real_)
       ),
-      SoilMoisture = replace(rlang::.data$SoilMoisture, rlang::.data$SoilMoisture < 0, NA_real_)
+      SoilMoisture = replace(.data$SoilMoisture, .data$SoilMoisture < 0, NA_real_)
     )
 
   cleaned %>%
