@@ -193,7 +193,7 @@ resolve_connection <- function(con) {
   }
 
   if (inherits(con, "Pool")) {
-    if (pool::poolClosed(con)) {
+    if (pool_is_closed(con)) {
       stop("The supplied connection pool has been closed.", call. = FALSE)
     }
     return(con)
@@ -289,23 +289,38 @@ build_phyloseq_object <- function(con_obj, counts, taxonomy) {
   tax_matrix <- as.matrix(taxonomy_unique[, setdiff(colnames(taxonomy_unique), "SV"), drop = FALSE])
   rownames(tax_matrix) <- taxonomy_unique$SV
 
-  asv_table <- construct_asv_table(
-    dplyr::select(counts, SV, MetagenNumber, Abundance)
-  )
-
   sample_info <- fetch_sampleInfo(con = con_obj)
   keep_samples <- unique(counts$MetagenNumber)
-  missing_samples <- setdiff(keep_samples, rownames(sample_info))
+  available_samples <- intersect(keep_samples, rownames(sample_info))
+  missing_samples <- setdiff(keep_samples, available_samples)
   if (length(missing_samples) > 0) {
-    stop(
+    warning(
       sprintf(
         "Sample metadata is missing for: %s",
         paste(missing_samples, collapse = ", ")
       ),
       call. = FALSE
     )
+    if (!length(available_samples)) {
+      stop(
+        "All requested samples are missing metadata; cannot build a phyloseq object.",
+        call. = FALSE
+      )
+    }
   }
-  sample_info <- sample_info[keep_samples, , drop = FALSE]
+
+  counts <- counts[counts$MetagenNumber %in% available_samples, , drop = FALSE]
+  if (!nrow(counts)) {
+    stop(
+      "No abundance records remain after removing samples without metadata.",
+      call. = FALSE
+    )
+  }
+  sample_info <- sample_info[available_samples, , drop = FALSE]
+
+  asv_table <- construct_asv_table(
+    dplyr::select(counts, SV, MetagenNumber, Abundance)
+  )
 
   phyloseqSparse::phyloseq(
     phyloseqSparse::otu_table(asv_table, taxa_are_rows = FALSE),

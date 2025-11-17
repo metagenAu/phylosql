@@ -1,5 +1,35 @@
 .phylosql_state <- new.env(parent = emptyenv())
 
+pool_is_closed <- function(pool) {
+  if (is.null(pool)) {
+    return(TRUE)
+  }
+
+  checkers <- c("poolClosed", "pool_closed")
+  pool_ns <- getNamespace("pool")
+
+  for (fn_name in checkers) {
+    if (exists(fn_name, envir = pool_ns, mode = "function")) {
+      result <- tryCatch(
+        get(fn_name, envir = pool_ns)(pool),
+        error = function(err) NA
+      )
+      if (!is.na(result)) {
+        return(isTRUE(result))
+      }
+    }
+  }
+
+  if (exists("pool_status", envir = pool_ns, mode = "function")) {
+    status <- tryCatch(get("pool_status", envir = pool_ns)(pool), error = function(err) NULL)
+    if (is.list(status) && !is.null(status$closed)) {
+      return(isTRUE(status$closed))
+    }
+  }
+
+  FALSE
+}
+
 load_connection_credentials <- function(path) {
   if (is.null(path) || !nzchar(path)) {
     stop("`path` must be a non-empty string to a credentials CSV file.", call. = FALSE)
@@ -106,7 +136,7 @@ get_mtgn_connection <- function(path = NULL, key = NULL, refresh = FALSE) {
 #'
 #' @return A live `pool::Pool` object.
 #' @export
-#' @importFrom pool dbPool poolClose poolClosed
+#' @importFrom pool dbPool poolClose
 set_pool <- function(path, key, size = NULL) {
   creds_df <- load_connection_credentials(path)
 
@@ -115,7 +145,7 @@ set_pool <- function(path, key, size = NULL) {
   }
 
   existing_pool <- .phylosql_state$pool
-  if (!is.null(existing_pool) && !pool::poolClosed(existing_pool)) {
+  if (!is.null(existing_pool) && !pool_is_closed(existing_pool)) {
     pool::poolClose(existing_pool)
   }
 
@@ -148,7 +178,7 @@ set_pool <- function(path, key, size = NULL) {
 #' @importFrom DBI dbIsValid
 try_fetch_connection <- function() {
   pool <- .phylosql_state$pool
-  if (!is.null(pool) && !pool::poolClosed(pool)) {
+  if (!is.null(pool) && !pool_is_closed(pool)) {
     return(pool)
   }
 
